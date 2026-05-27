@@ -1,0 +1,6 @@
+# Keep the first public baseline intentionally minimal.
+*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/CONTRIBUTING.md
