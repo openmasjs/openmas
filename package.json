@@ -1,0 +1,42 @@
+{
+  "name": "openmas",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open Source Multi-Agent System (MAS) Framework",
+  "type": "module",
+  "main": "./src/boot/run-system-boot.js",
+  "scripts": {
+    "boot": "node ./bin/boot.js",
+    "invoke:agent": "node ./bin/invoke-agent.js",
+    "lint": "eslint tests",
+    "lint:tests": "eslint tests",
+    "test": "node ./tests/run-tests.js",
+    "test:live:providers": "node ./tests/live/provider-vault-smoke-test.js",
+    "test:live:alfred": "node ./tests/live/alfred-live-smoke-test.js",
+    "test:live:bruce": "node ./tests/live/bruce-live-smoke-test.js",
+    "test:live:delegation": "node ./tests/live/alfred-bruce-delegation-live-smoke-test.js",
+    "test:live:alfred:durable": "node ./tests/live/alfred-durable-context-smoke-test.js",
+    "test:live:alfred:fallback": "node ./tests/live/alfred-fallback-smoke-test.js",
+    "credentials:edit": "node ./bin/credentials.js edit",
+    "credentials:show": "node ./bin/credentials.js show"
+  },
+  "keywords": [
+    "openmas",
+    "multi-agent-system",
+    "mas",
+    "framework",
+    "nodejs",
+    "esm"
+  ],
+  "openmas": {
+    "projectKind": "framework",
+    "schemaVersion": 1
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.4.0"
+  }
+}
