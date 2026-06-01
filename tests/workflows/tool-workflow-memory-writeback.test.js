@@ -189,7 +189,7 @@ async function createWorkflowWritebackFixture({
           resourceId: 'mas-filesystem',
           accessMode: 'read',
           bindingState: 'active',
-          secretReferenceId: null,
+          credentialReferenceId: null,
         },
       ],
     },

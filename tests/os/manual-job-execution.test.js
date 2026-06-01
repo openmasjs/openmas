@@ -9,6 +9,7 @@ import {
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
 import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
 import { createAlfredProbabilisticProjectFixture } from '../helpers/create-alfred-probabilistic-fixture.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const CREATED_AT = '2026-05-14T10:00:00-05:00';
 const ADMITTED_AT = '2026-05-14T10:01:00-05:00';
@@ -343,9 +344,58 @@ test('runJobNow materializes foreground warnings, tool refs, and verification ga
   assert.deepEqual(completionResult.toolRunRefs, ['tool-run-foreground-001']);
   assert.equal(completionResult.warnings.length, 1);
   assert.equal(completionResult.warnings[0].message, 'Tool observation preview was bounded.');
+  assert.equal(completionResult.warnings[0].affectsResultTrust, false);
   assert.equal(completionResult.verification.status, 'warning');
   assert.equal(completionResult.verification.grounded, true);
   assert.equal(completionResult.metadata.actionResultAssessment.status, 'success');
+});
+
+test('runJobNow marks foreground warnings as trust-affecting when verification fails', async () => {
+  const projectRootPath = await createAlfredProbabilisticProjectFixture();
+  const adapter = createLocalRuntimeAdapter({ projectRootPath });
+
+  await createJob({
+    adapter,
+    job: createManualAgentJob({
+      jobId: 'job_foreground_result_with_unsupported_claim',
+      status: 'ready',
+    }),
+    now: () => CREATED_AT,
+  });
+
+  const result = await runJobNow({
+    adapter,
+    projectRootPath,
+    jobId: 'job_foreground_result_with_unsupported_claim',
+    now: createClock([STARTED_AT, FINISHED_AT]),
+    invocationRunner: async () => {
+      return {
+        invocationId: 'invocation_foreground_result_with_unsupported_claim',
+        status: 'completed',
+        message: 'Foreground answer requires review.',
+        warnings: [
+          'Unsupported completed-action claim requires review.',
+        ],
+        errors: [],
+        persistence: null,
+        output: {
+          actionResultAssessment: {
+            answerGroundedInEvidence: false,
+          },
+        },
+        verificationGate: {
+          status: 'failed',
+          verificationOutcome: 'not_verified',
+          executionObserved: false,
+          reason: 'Runtime evidence did not support the completed-action claim.',
+        },
+      };
+    },
+  });
+
+  assert.equal(result.foregroundCompletionResult.status, 'completed_with_warnings');
+  assert.equal(result.foregroundCompletionResult.verification.status, 'failed');
+  assert.equal(result.foregroundCompletionResult.warnings[0].affectsResultTrust, true);
 });
 
 test('runJobNow allows only one concurrent caller to claim the same ready Job', async () => {
@@ -494,6 +544,7 @@ test('runJobNow keeps the parent Process and Thread blocked after mas.os.delegat
 test('runJobNow preserves newer kernel delegation state when System Call processing advances the parent first', async () => {
   const projectRootPath = await createAlfredProbabilisticProjectFixture();
   const adapter = createLocalRuntimeAdapter({ projectRootPath });
+  const rawSecret = buildFakeOpenRouterSecretProbe('obsoleteContinuationSecret123456789');
 
   await createJob({
     adapter,
@@ -537,10 +588,10 @@ test('runJobNow preserves newer kernel delegation state when System Call process
 
       return {
         invocationId: 'invocation_delegate_race_parent',
-        status: 'completed',
-        message: 'Delegation requested.',
+        status: 'failed',
+        message: `Obsolete delegation follow-up failed after provider timeout ${rawSecret}.`,
         warnings: [],
-        errors: [],
+        errors: [`Provider timeout ${rawSecret}.`],
         persistence: null,
         output: {
           brainToolExecution: {
@@ -564,8 +615,11 @@ test('runJobNow preserves newer kernel delegation state when System Call process
   });
   const persistedProcess = await adapter.loadProcess(result.process.processId);
   const persistedThread = await adapter.loadThread(result.thread.threadId);
-  const eventTypes = (await adapter.readEvents({ date: '2026-05-14' }))
-    .map((event) => event.eventType);
+  const events = await adapter.readEvents({ date: '2026-05-14' });
+  const eventTypes = events.map((event) => event.eventType);
+  const skippedFinalizationEvent = events.find((event) => {
+    return event.eventType === 'job.finalization_skipped';
+  });
 
   assert.equal(result.job.status, 'active');
   assert.equal(result.process.status, 'blocked');
@@ -577,6 +631,10 @@ test('runJobNow preserves newer kernel delegation state when System Call process
   assert.equal(result.foregroundAdmissionResult.resultKind, 'foreground_admission_result');
   assert.equal(result.foregroundCompletionResult, null);
   assert.ok(eventTypes.includes('job.finalization_skipped'));
+  assert.equal(skippedFinalizationEvent.payload.authoritativeStateChanged, false);
+  assert.equal(skippedFinalizationEvent.payload.failureSummary.reasonCode, 'invocation_failed');
+  assert.match(skippedFinalizationEvent.payload.failureSummary.message, /Obsolete delegation follow-up failed/u);
+  assert.doesNotMatch(JSON.stringify(skippedFinalizationEvent), new RegExp(rawSecret, 'u'));
 });
 
 test('runJobNow persists failed Job, Process, and Thread state when invocation fails', async () => {
@@ -663,7 +721,7 @@ test('runJobNow closes OS state as failed when the invocation runner throws', as
     now: () => ADMITTED_AT,
   });
 
-  const rawSecret = 'sk-or-v1-runnerSecret123456789';
+  const rawSecret = buildFakeOpenRouterSecretProbe('runnerSecret123456789');
   const result = await runJobNow({
     adapter,
     projectRootPath,
@@ -685,6 +743,48 @@ test('runJobNow closes OS state as failed when the invocation runner throws', as
   assert.equal(result.thread.failedAt, FINISHED_AT);
   assert.match(result.job.failureSummary.message, /Injected runner failure/u);
   assert.doesNotMatch(JSON.stringify(result), new RegExp(rawSecret, 'u'));
+});
+
+test('runJobNow refuses unsupported foreground resource sleeps as retryable terminal failures', async () => {
+  const projectRootPath = await createAlfredProbabilisticProjectFixture();
+  const adapter = createLocalRuntimeAdapter({ projectRootPath });
+
+  await createJob({
+    adapter,
+    job: createManualAgentJob({
+      jobId: 'job_foreground_resource_wait_not_supported',
+      status: 'ready',
+    }),
+    now: () => CREATED_AT,
+  });
+
+  const result = await runJobNow({
+    adapter,
+    projectRootPath,
+    jobId: 'job_foreground_resource_wait_not_supported',
+    now: createClock([STARTED_AT, FINISHED_AT]),
+    invocationRunner: async () => {
+      return {
+        invocationId: 'invocation_foreground_resource_wait_not_supported',
+        status: 'blocked',
+        message: 'Provider capacity is temporarily unavailable.',
+        warnings: [],
+        errors: [],
+        persistence: null,
+      };
+    },
+  });
+
+  assert.equal(result.job.status, 'failed');
+  assert.equal(result.process.status, 'failed');
+  assert.equal(result.process.currentThreadId, null);
+  assert.equal(result.thread.status, 'failed');
+  assert.equal(result.thread.waitReason, null);
+  assert.equal(result.job.failureSummary.reasonCode, 'unsupported_foreground_resource_wait');
+  assert.equal(result.foregroundCompletionResult.status, 'failed');
+  assert.equal(result.foregroundCompletionResult.failure.reasonCode, 'unsupported_foreground_resource_wait');
+  assert.equal(result.foregroundCompletionResult.failure.recoverable, true);
+  assert.equal(result.foregroundCompletionResult.failure.retryable, true);
 });
 
 test('runJobNow preserves OS state without raw Credential Vault secrets', async () => {

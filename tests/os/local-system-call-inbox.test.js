@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   access,
   mkdir,
@@ -214,7 +215,7 @@ test('LocalSystemCallInbox rejects unsafe pending calls before publication', asy
         requesterOperationalIdentityId: 'alfred',
         targetOperationalIdentityId: 'bruce',
         child: {
-          input: 'Use sk-or-v1-secretvalue1234567890 while inspecting.',
+          input: `Use ${buildFakeOpenRouterSecretProbe('secretvalue1234567890')} while inspecting.`,
         },
       },
     })),

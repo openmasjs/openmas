@@ -48,7 +48,7 @@ function buildResolvedBinding(overrides = {}) {
     resourceId: 'mas-filesystem',
     accessMode: 'read',
     bindingState: 'active',
-    secretReferenceId: null,
+    credentialReferenceId: null,
     resourceType: 'storage',
     resourceDisplayName: 'MAS Filesystem',
     ownershipScope: 'shared',
@@ -84,13 +84,13 @@ function buildPermissionEvaluation({
   });
 }
 
-function buildSecretResolution({ status = 'resolved', secretReferenceId = 'meta-token' } = {}) {
+function buildSecretResolution({ status = 'resolved', credentialReferenceId = 'meta-token' } = {}) {
   return {
-    resolvedSecretReferences: [
+    resolvedCredentialReferences: [
       {
         resourceId: 'meta-channel',
-        secretReferenceId,
-        secretType: 'access_token',
+        credentialReferenceId,
+        credentialType: 'access_token',
         resolutionStatus: status,
         reason: status === 'resolved'
           ? 'Credential vault secret resolved successfully.'
@@ -106,7 +106,7 @@ function buildSecretResolution({ status = 'resolved', secretReferenceId = 'meta-
     },
     warnings: [],
     secretValueByReferenceId: new Map([
-      [secretReferenceId, 'SECRET_VALUE_SHOULD_NOT_LEAK'],
+      [credentialReferenceId, 'SECRET_VALUE_SHOULD_NOT_LEAK'],
     ]),
   };
 }
@@ -133,7 +133,7 @@ test('evaluateToolReadinessForInvocation marks risky ready tools as approval_req
     buildResolvedBinding({
       resourceId: 'meta-channel',
       accessMode: 'publish',
-      secretReferenceId: 'meta-token',
+      credentialReferenceId: 'meta-token',
       resourceType: 'channel',
       resourceDisplayName: 'Meta Channel',
     }),
@@ -173,7 +173,7 @@ test('evaluateToolReadinessForInvocation marks risky ready tools as approval_req
 
   assert.equal(verdict.status, 'approval_required');
   assert.equal(verdict.approvalRequired, true);
-  assert.equal(verdict.matchedBindings[0].secretReferenceId, 'meta-token');
+  assert.equal(verdict.matchedBindings[0].credentialReferenceId, 'meta-token');
   assert.equal(verdict.matchedBindings[0].secretResolutionStatus, 'resolved');
   assert.equal(serializedEvaluation.includes('SECRET_VALUE_SHOULD_NOT_LEAK'), false);
   assert.equal(evaluation.summary.approvalRequired, 1);
@@ -230,7 +230,7 @@ test('evaluateToolReadinessForInvocation marks tools unavailable when required s
     buildResolvedBinding({
       resourceId: 'meta-channel',
       accessMode: 'read',
-      secretReferenceId: 'meta-token',
+      credentialReferenceId: 'meta-token',
       resourceType: 'channel',
       resourceDisplayName: 'Meta Channel',
     }),
@@ -265,7 +265,7 @@ test('evaluateToolReadinessForInvocation marks tools unavailable when required s
 
   assert.equal(verdict.status, 'unavailable');
   assert.equal(verdict.matchedBindings[0].secretResolutionStatus, 'unresolved');
-  assert.match(verdict.missingRequirements[0].reason, /Secret Reference meta-token is not resolved/u);
+  assert.match(verdict.missingRequirements[0].reason, /Credential Reference meta-token is not resolved/u);
 });
 
 test('evaluateToolReadinessForInvocation marks inactive tools as unavailable', () => {
@@ -290,7 +290,7 @@ test('evaluateToolReadinessForInvocation keeps deterministic summaries across mi
     buildResolvedBinding({
       resourceId: 'meta-channel',
       accessMode: 'publish',
-      secretReferenceId: 'meta-token',
+      credentialReferenceId: 'meta-token',
       resourceType: 'channel',
       resourceDisplayName: 'Meta Channel',
     }),

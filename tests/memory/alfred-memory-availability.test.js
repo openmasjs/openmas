@@ -23,7 +23,7 @@ const ALFRED_ADMIN_PREFERENCE_MARKER = 'ALFRED_ADMIN_PREFERENCE_MEMORY_ALLOWED';
 const ALFRED_MAS_DURABLE_HEALTH_MARKER = 'ALFRED_MAS_DURABLE_HEALTH_MEMORY_ALLOWED';
 const ALFRED_STALE_DURABLE_MARKER = 'ALFRED_STALE_DURABLE_MEMORY_MUST_NOT_REACH_CONTEXT';
 const ALFRED_PENDING_DURABLE_MARKER = 'ALFRED_PENDING_DURABLE_MEMORY_MUST_NOT_REACH_CONTEXT';
-const ALFRED_SECRET_REFERENCE_MARKER = 'ALFRED_SECRET_REFERENCE_MEMORY_MUST_NOT_REACH_CONTEXT';
+const ALFRED_CREDENTIAL_REFERENCE_MARKER = 'ALFRED_CREDENTIAL_REFERENCE_MEMORY_MUST_NOT_REACH_CONTEXT';
 const ALFRED_JUAN_PRIVATE_MARKER = 'ALFRED_JUAN_PRIVATE_MEMORY_MUST_NOT_REACH_CONTEXT';
 
 function createMemorySourceDefinition(overrides = {}) {
@@ -655,7 +655,7 @@ test('Alfred MAS stewardship acid test keeps private and unsafe memory out of pr
         projectRootPath,
         memoryRecord: createDurableMemoryRecord({
           memoryRecordId: 'mem_alfred_secret_reference_health_signal',
-          summary: `${ALFRED_SECRET_REFERENCE_MARKER}: secret-reference-only durable memory must not shape Alfred.`,
+          summary: `${ALFRED_CREDENTIAL_REFERENCE_MARKER}: credential-reference-only durable memory must not shape Alfred.`,
           content: null,
           sensitivityLevel: 'secret_reference_only',
         }),
@@ -681,7 +681,7 @@ test('Alfred MAS stewardship acid test keeps private and unsafe memory out of pr
       assert.doesNotMatch(providerSystemMessage, new RegExp(ALFRED_JUAN_PRIVATE_MARKER, 'u'));
       assert.doesNotMatch(providerSystemMessage, new RegExp(ALFRED_STALE_DURABLE_MARKER, 'u'));
       assert.doesNotMatch(providerSystemMessage, new RegExp(ALFRED_PENDING_DURABLE_MARKER, 'u'));
-      assert.doesNotMatch(providerSystemMessage, new RegExp(ALFRED_SECRET_REFERENCE_MARKER, 'u'));
+      assert.doesNotMatch(providerSystemMessage, new RegExp(ALFRED_CREDENTIAL_REFERENCE_MARKER, 'u'));
       assert.doesNotMatch(providerSystemMessage, /openrouter-secret/u);
       assert.doesNotMatch(providerSystemMessage, /gemini-secret/u);
       assert.match(providerSystemMessage, /Cognitive identity memory .* belongs to media-buyer, which is not active/u);

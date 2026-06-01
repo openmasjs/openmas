@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { buildFakeGeminiSecretProbe, buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   OPENMAS_OS_JOB_STATUSES,
   OPENMAS_OS_KINDS,
@@ -79,7 +80,7 @@ function createProcess(overrides = {}) {
         path: 'instance/memory/artifacts/reports/health-report.json',
       },
     ],
-    secretReferenceIds: [
+    credentialReferenceIds: [
       'providers.openrouter.shared.default.api_key',
     ],
     pendingApprovalRefs: [],
@@ -230,7 +231,7 @@ test('assertOpenMasOsJob rejects invalid states, unsafe ids, and raw secret-like
     () => assertOpenMasOsJob(createJob({
       inputRef: {
         type: 'inline_text',
-        text: 'Use API key sk-or-v1-secretvalue here.',
+        text: `Use API key ${buildFakeOpenRouterSecretProbe('secretvalue')} here.`,
       },
     })),
     /secret-like value/u,
@@ -239,19 +240,19 @@ test('assertOpenMasOsJob rejects invalid states, unsafe ids, and raw secret-like
   assert.throws(
     () => assertOpenMasOsJob(createJob({
       policies: {
-        apiKey: 'sk-or-v1-secretvalue',
+        apiKey: buildFakeOpenRouterSecretProbe('secretvalue'),
       },
     })),
     /raw secret-like field/u,
   );
 });
 
-test('assertOpenMasOsProcess accepts safe runtime metadata and secret reference ids', () => {
+test('assertOpenMasOsProcess accepts safe runtime metadata and credential reference ids', () => {
   const processState = assertOpenMasOsProcess(createProcess());
 
   assert.equal(processState.kind, OPENMAS_OS_KINDS.process);
   assert.equal(processState.status, 'running');
-  assert.deepEqual(processState.secretReferenceIds, [
+  assert.deepEqual(processState.credentialReferenceIds, [
     'providers.openrouter.shared.default.api_key',
   ]);
   assert.equal(processState.secretValue, undefined);
@@ -299,7 +300,7 @@ test('assertOpenMasOsJob, Process, and Thread preserve safe failure summaries', 
       failedAt: NOW,
       failureSummary: {
         ...failureSummary,
-        message: 'Provider rejected sk-or-v1-secretvalue123456789.',
+        message: `Provider rejected ${buildFakeOpenRouterSecretProbe('secretvalue123456789')}.`,
       },
     })),
     /secret-like value/u,
@@ -368,7 +369,7 @@ test('assertOpenMasOsEvent accepts safe event facts and rejects unsafe payloads'
     () => assertOpenMasOsEvent(createEvent({
       payload: {
         credential: {
-          apiKey: 'sk-or-v1-secretvalue',
+          apiKey: buildFakeOpenRouterSecretProbe('secretvalue'),
         },
       },
     })),
@@ -399,27 +400,27 @@ test('assertOpenMasOsSignal accepts runtime signals and rejects invalid targets 
   );
 });
 
-test('assertSafeOsSerializableValue allows secret reference metadata but rejects raw secret fields and values', () => {
+test('assertSafeOsSerializableValue allows credential reference metadata but rejects raw secret fields and values', () => {
   const safeValue = assertSafeOsSerializableValue({
-    secretReferenceIds: [
+    credentialReferenceIds: [
       'providers.gemini.shared.default.api_key',
     ],
     status: 'resolved',
   });
 
-  assert.deepEqual(safeValue.secretReferenceIds, [
+  assert.deepEqual(safeValue.credentialReferenceIds, [
     'providers.gemini.shared.default.api_key',
   ]);
 
   assert.throws(
     () => assertSafeOsSerializableValue({
-      secretValue: 'sk-or-v1-secretvalue',
+      secretValue: buildFakeOpenRouterSecretProbe('secretvalue'),
     }),
     /raw secret-like field/u,
   );
 
   assert.throws(
-    () => assertSafeOsSerializableValue('AIzaSyFakeSecretValue1234567890'),
+    () => assertSafeOsSerializableValue(buildFakeGeminiSecretProbe('SyFakeSecretValue1234567890')),
     /secret-like value/u,
   );
 });

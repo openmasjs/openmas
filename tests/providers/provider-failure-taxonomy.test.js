@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assertProviderFailure } from '../../src/contracts/provider-failure-contract.js';
 import { classifyProviderFailure } from '../../src/providers/classify-provider-failure.js';
+import { buildFakeGeminiSecretProbe, buildFakeOpenAiSecretProbe } from '../helpers/fake-secret-probes.js';
 
 test('classifyProviderFailure maps Gemini high-demand unavailable errors to transient_unavailable', () => {
   const providerFailure = classifyProviderFailure({
@@ -79,11 +80,11 @@ test('classifyProviderFailure maps adapter exceptions to timeout or network cate
 test('classifyProviderFailure redacts secret-like values from safe messages', () => {
   const providerFailure = classifyProviderFailure({
     errorCode: 'http_401',
-    errorMessage: 'Authorization failed for Bearer sk-testsecret1234567890123456789012345678901234567890 and key AIzaSyFakeSecret123456789.',
+    errorMessage: `Authorization failed for Bearer ${buildFakeOpenAiSecretProbe('testsecret1234567890123456789012345678901234567890')} and key ${buildFakeGeminiSecretProbe('SyFakeSecret123456789')}.`,
   });
 
-  assert.doesNotMatch(providerFailure.safeMessage, /sk-testsecret/u);
-  assert.doesNotMatch(providerFailure.safeMessage, /AIzaSyFakeSecret/u);
+  assert.doesNotMatch(providerFailure.safeMessage, new RegExp(buildFakeOpenAiSecretProbe('testsecret'), 'u'));
+  assert.doesNotMatch(providerFailure.safeMessage, new RegExp(buildFakeGeminiSecretProbe('SyFakeSecret'), 'u'));
   assert.match(providerFailure.safeMessage, /\[REDACTED/u);
 });
 

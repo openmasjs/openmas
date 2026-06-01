@@ -157,7 +157,7 @@ function buildProbabilisticInvocationSession() {
           providerId: 'openrouter-api',
           modelId: 'openrouter/free',
           providerPreparationStatus: 'ready',
-          secretReferenceId: 'openrouter-api-key',
+          credentialReferenceId: 'openrouter-api-key',
           status: 'completed',
           reason: 'Brain provider completed successfully.',
           brainInputSummary: {

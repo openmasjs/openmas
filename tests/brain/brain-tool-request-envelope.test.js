@@ -6,6 +6,7 @@ import { assertBrainToolRequestEnvelope } from '../../src/contracts/brain-tool-r
 import { parseBrainToolRequestEnvelopeFromText } from '../../src/tools/parse-brain-tool-request-envelope.js';
 import { resolveBrainToolRequestForInvocation } from '../../src/tools/resolve-brain-tool-request-for-invocation.js';
 import { runAgentInvocation } from '../../src/invocation/run-agent-invocation.js';
+import { buildFakeGeminiSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   createAlfredProbabilisticProjectFixture,
   withEnvironment,
@@ -58,7 +59,7 @@ function buildToolReadinessVerdict(overrides = {}) {
         resourceId: 'mas-filesystem',
         resourceType: 'storage',
         accessMode: 'read',
-        secretReferenceId: null,
+        credentialReferenceId: null,
         secretResolutionStatus: null,
       },
     ],
@@ -184,19 +185,19 @@ async function addToolRuntimeToAlfredFixture(projectRootPath, {
           resourceId: 'openrouter-api',
           accessMode: 'execute',
           bindingState: 'active',
-          secretReferenceId: 'openrouter-api-key',
+          credentialReferenceId: 'openrouter-api-key',
         },
         {
           resourceId: 'gemini-api',
           accessMode: 'execute',
           bindingState: 'active',
-          secretReferenceId: 'gemini-api-key',
+          credentialReferenceId: 'gemini-api-key',
         },
         {
           resourceId: 'mas-filesystem',
           accessMode: 'read',
           bindingState: 'active',
-          secretReferenceId: null,
+          credentialReferenceId: null,
         },
       ],
     },
@@ -245,7 +246,7 @@ async function addToolRuntimeToAlfredFixture(projectRootPath, {
       '    summary: "MAS system inspection completed from a brain-requested read-only tool.",',
       '    data: {',
       '      inputEcho: input,',
-      '      apiKey: "AIzaFAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK",',
+      `      apiKey: "${buildFakeGeminiSecretProbe('FAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK')}",`,
       '      registeredOperationalIdentities: ["alfred"]',
       '    },',
       '    warnings: [],',
@@ -448,7 +449,7 @@ test('resolveBrainToolRequestForInvocation accepts, denies, or requires approval
             resourceId: 'meta-channel',
             resourceType: 'channel',
             accessMode: 'publish',
-            secretReferenceId: 'meta-token',
+            credentialReferenceId: 'meta-token',
             secretResolutionStatus: 'resolved',
           },
         ],
@@ -563,7 +564,7 @@ test('runAgentInvocation executes an accepted read-only brain tool request and r
           assert.match(systemMessage, /MAS system inspection completed from a brain-requested read-only tool/u);
           assert.match(systemMessage, /registeredOperationalIdentities/u);
           assert.match(systemMessage, /\[REDACTED\]/u);
-          assert.doesNotMatch(systemMessage, /AIzaFAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK/u);
+          assert.doesNotMatch(systemMessage, new RegExp(buildFakeGeminiSecretProbe('FAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK'), 'u'));
           assert.match(body.messages[1].content, /Runtime Follow-up/u);
           assert.match(body.messages[1].content, /Produce the final user-facing answer now/u);
 
@@ -656,8 +657,8 @@ test('runAgentInvocation executes an accepted read-only brain tool request and r
       assert.match(invocationReport, /inspection completed successfully/u);
       assert.equal(persistedWritebackRequest.memoryWrites[0].approvalState, 'pending');
       assert.equal(persistedWritebackRequest.memoryWrites[0].sourceReferences[0].sourceType, 'tool_result');
-      assert.doesNotMatch(serializedSession, /openrouter-secret|gemini-secret|AIzaFAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK/u);
-      assert.doesNotMatch(JSON.stringify(persistedWritebackRequest), /AIzaFAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK/u);
+      assert.doesNotMatch(serializedSession, new RegExp(`openrouter-secret|gemini-secret|${buildFakeGeminiSecretProbe('FAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK')}`, 'u'));
+      assert.doesNotMatch(JSON.stringify(persistedWritebackRequest), new RegExp(buildFakeGeminiSecretProbe('FAKE_BRAIN_TOOL_SECRET_SHOULD_NOT_LEAK'), 'u'));
     },
   );
 });

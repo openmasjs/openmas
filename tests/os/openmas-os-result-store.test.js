@@ -10,6 +10,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   OPENMAS_OS_RESULT_RECORD_KINDS,
 } from '../../src/contracts/openmas-os-result-record-contract.js';
@@ -258,7 +259,7 @@ test('Result Store rejects raw secrets before persistence', async () => {
   await assert.rejects(
     () => adapter.persistResultRecord(createResultRecord({
       metadata: {
-        apiKey: 'sk-or-v1-secretvalue',
+        apiKey: buildFakeOpenRouterSecretProbe('secretvalue'),
       },
     })),
     /raw secret-like field/u,

@@ -189,7 +189,7 @@ function createParentProcess(overrides = {}) {
     conversationId: 'os-m2-delegation-smoke',
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: CREATED_AT,
@@ -489,6 +489,33 @@ test('executeMasOsDelegate rejects a Cognitive Identity selector before submitti
   );
 });
 
+test('executeMasOsDelegate rejects missing parent lineage before submitting a System Call', async () => {
+  const { projectRootPath, inbox } = await createProjectFixture();
+
+  await assert.rejects(
+    () => executeMasOsDelegate({
+      input: createDelegateInput({
+        parentContext: {
+          jobId: null,
+          processId: null,
+          threadId: null,
+        },
+        systemCallId: 'syscall_delegate_missing_parent_lineage_001',
+      }),
+      projectRootPath,
+      operationalIdentityId: 'alfred',
+      invocationId: 'invocation-mas-os-delegate-missing-parent-lineage-001',
+      now: () => DELEGATED_AT,
+    }),
+    /requires parentContext\.processId and parentContext\.threadId/u,
+  );
+
+  await assert.rejects(
+    () => inbox.loadPendingSystemCall('syscall_delegate_missing_parent_lineage_001'),
+    /was not found/u,
+  );
+});
+
 test('OpenMAS OS service processes mas.os.delegate System Call into child Job and parent wait state', async () => {
   const {
     projectRootPath,
@@ -605,7 +632,18 @@ test('executeAcceptedBrainToolRequest runs mas.os.delegate through the governed 
     invocationId: 'invocation-mas-os-delegate-tool-001',
     operationalIdentityId: 'alfred',
     requestedBy: 'test-suite',
-    toolRequestResolution: buildAcceptedToolResolution(),
+    osRuntimeContext: {
+      jobId: 'job_parent_alfred',
+      processId: 'process_parent_alfred',
+      threadId: 'thread_parent_alfred',
+    },
+    toolRequestResolution: buildAcceptedToolResolution(createDelegateInput({
+      parentContext: {
+        jobId: 'job_untrusted',
+        processId: 'process_untrusted',
+        threadId: 'thread_untrusted',
+      },
+    })),
     toolDefinitions: [await readMasOsDelegateToolDefinition()],
   });
 
@@ -613,6 +651,7 @@ test('executeAcceptedBrainToolRequest runs mas.os.delegate through the governed 
   assert.equal(execution.executionPerformed, true);
   assert.equal(execution.requestedToolId, 'mas.os.delegate');
   assert.equal(execution.toolResultStatus, 'succeeded');
+  assert.equal(execution.continuationPolicy, 'yield_to_kernel');
   assert.equal(execution.observation.status, 'succeeded');
   assert.equal(execution.observation.dataPreview.delegated, false);
   assert.equal(execution.observation.dataPreview.systemCall.operation, 'delegate');
@@ -624,6 +663,11 @@ test('executeAcceptedBrainToolRequest runs mas.os.delegate through the governed 
 
   assert.equal(pendingSystemCall.payload.requesterOperationalIdentityId, 'alfred');
   assert.equal(pendingSystemCall.payload.targetOperationalIdentityId, 'bruce');
+  assert.deepEqual(pendingSystemCall.payload.parentContext, {
+    jobId: 'job_parent_alfred',
+    processId: 'process_parent_alfred',
+    threadId: 'thread_parent_alfred',
+  });
   await assert.rejects(
     () => adapter.loadJob(`job_${pendingSystemCallId}`),
     /was not found/u,

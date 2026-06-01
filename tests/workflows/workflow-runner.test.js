@@ -128,7 +128,7 @@ function buildBindings({ includeMetaChannel = false } = {}) {
       resourceId: 'mas-filesystem',
       accessMode: 'read',
       bindingState: 'active',
-      secretReferenceId: null,
+      credentialReferenceId: null,
     },
     ...(includeMetaChannel
       ? [
@@ -136,7 +136,7 @@ function buildBindings({ includeMetaChannel = false } = {}) {
           resourceId: 'meta-channel',
           accessMode: 'publish',
           bindingState: 'active',
-          secretReferenceId: null,
+          credentialReferenceId: null,
         },
       ]
       : []),

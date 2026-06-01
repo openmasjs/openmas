@@ -6,10 +6,11 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { runDeterministicCommand } from '../../instance/cognitive-identities/system-steward/commands/memory-health.js';
 import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
 import { createDurableMemoryRecordFileName } from '../../src/memory/write-durable-memory-record.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const VALID_CREATED_AT = '2026-04-14T00:00:00.000Z';
 const VALID_SHA_256 = 'b'.repeat(64);
-const SECRET_LOOKING_VALUE = 'sk-or-v1-abcdefghijklmnopqrstuvwxyz123456';
+const SECRET_LOOKING_VALUE = buildFakeOpenRouterSecretProbe('abcdefghijklmnopqrstuvwxyz123456');
 
 async function createTemporaryMasRoot() {
   const temporaryRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-memory-health-'));

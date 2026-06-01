@@ -27,7 +27,7 @@ function buildMasInspectRuntimeContext() {
             {
               resourceId: 'mas-filesystem',
               accessMode: 'read',
-              secretReferenceId: null,
+              credentialReferenceId: null,
             },
           ],
         },
@@ -149,7 +149,7 @@ test('action guard and result assessment warnings stay request-impacting', () =>
 test('provider and secret warnings use provider context for relevance', () => {
   const warningRelevance = buildRuntimeWarningRelevance([
     'Provider openrouter-api failed: API key not valid.',
-    'Secret Reference gemini-api-key is not resolved for resource gemini-api.',
+    'Credential Reference gemini-api-key is not resolved for resource gemini-api.',
   ], {
     runtimeContext: buildMasInspectRuntimeContext(),
   });

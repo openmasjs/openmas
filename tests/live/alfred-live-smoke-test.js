@@ -2,7 +2,7 @@
 
 import process from 'node:process';
 import {
-  LIVE_SECRET_REFERENCE_IDS,
+  LIVE_CREDENTIAL_REFERENCE_IDS,
   assertCompletedAgentSmoke,
   printAgentSmokeSummary,
   printRequiredSecretReferenceStatus,
@@ -16,8 +16,8 @@ async function main() {
 
   await runLiveSmokeMain(label, async () => {
     const requiredSecretReferenceIds = [
-      LIVE_SECRET_REFERENCE_IDS.openRouterAlfredDefault,
-      LIVE_SECRET_REFERENCE_IDS.geminiSharedDefault,
+      LIVE_CREDENTIAL_REFERENCE_IDS.openRouterAlfredDefault,
+      LIVE_CREDENTIAL_REFERENCE_IDS.geminiSharedDefault,
     ];
     const credentials = await readLiveCredentialVault({
       requiredSecretReferenceIds,

@@ -414,6 +414,33 @@ test('governVisibleBrainOutput replaces clarification-blocked pseudo tool calls 
   assert.doesNotMatch(result.brainOutput.outputText, /<tool_call>|mas\.system\.inspect|voy a inspeccionar/u);
 });
 
+test('governVisibleBrainOutput replaces clarification-blocked delegation receipt claims without OS evidence', () => {
+  const result = governVisibleBrainOutput({
+    request: {
+      originalInput: 'Alfred, delegate the live smoke request to Bruce now.',
+    },
+    brainOutput: buildBrainOutput({
+      outputText: 'Bruce, I have received the delegation smoke request and am awaiting execution.',
+    }),
+    actionResolution: {
+      status: 'needs_clarification',
+      clarificationRequest: {
+        reasonCategory: 'unsupported_request',
+        metadata: {
+          optionHints: [],
+          contextReferences: [],
+        },
+      },
+    },
+  });
+
+  assert.equal(result.governed, true);
+  assert.equal(result.reason, 'blocked_action_execution_claim');
+  assert.match(result.brainOutput.outputText, /No action was executed/i);
+  assert.match(result.brainOutput.outputText, /please restate the action/i);
+  assert.doesNotMatch(result.brainOutput.outputText, /received the delegation|awaiting execution/u);
+});
+
 test('governVisibleBrainOutput strips incomplete pseudo tool-call markup from visible output', () => {
   const result = governVisibleBrainOutput({
     request: {

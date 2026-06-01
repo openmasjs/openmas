@@ -18,6 +18,7 @@ import {
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
 import { createLocalSystemCallInbox } from '../../src/os/system-calls/local-system-call-inbox.js';
 import { scheduleOneShotJob } from '../../src/os/scheduler/one-shot-scheduled-jobs.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   claimKernelLock,
   readKernelLock,
@@ -143,6 +144,90 @@ function createStatusResultRecord(overrides = {}) {
     },
     metadata: {},
     createdAt: STATUS_LATER,
+    ...overrides,
+  };
+}
+
+function createBlockedWaitJob(overrides = {}) {
+  return {
+    kind: OPENMAS_OS_KINDS.job,
+    schemaVersion: 1,
+    jobId: 'job_status_blocked_wait_001',
+    projectId: 'project_openmas',
+    status: 'active',
+    createdBy: {
+      type: 'human',
+      id: 'admin',
+    },
+    assignedOperationalIdentityId: 'alfred',
+    program: {
+      type: 'agent_invocation',
+      command: 'ask',
+      mode: 'probabilistic',
+    },
+    inputRef: {
+      type: 'inline_text',
+      text: 'Inspect the MAS.',
+    },
+    conversationId: 'alfred-admin',
+    trigger: {
+      type: 'immediate',
+    },
+    priority: 40,
+    policies: {
+      requiresApproval: false,
+      maxAttempts: 1,
+      noOverlap: false,
+    },
+    createdAt: NOW,
+    updatedAt: NOW,
+    ...overrides,
+  };
+}
+
+function createBlockedWaitProcess(overrides = {}) {
+  return {
+    kind: OPENMAS_OS_KINDS.process,
+    schemaVersion: 1,
+    processId: 'process_status_blocked_wait_001',
+    jobId: 'job_status_blocked_wait_001',
+    status: 'blocked',
+    operationalIdentityId: 'alfred',
+    activeCognitiveIdentityId: 'system-steward',
+    currentThreadId: 'thread_status_blocked_wait_001',
+    parentProcessId: null,
+    childProcessIds: [],
+    conversationId: 'alfred-admin',
+    memoryContextRefs: [],
+    artifactRefs: [],
+    credentialReferenceIds: [],
+    pendingApprovalRefs: [],
+    warnings: [],
+    createdAt: NOW,
+    startedAt: NOW,
+    updatedAt: NOW,
+    completedAt: null,
+    ...overrides,
+  };
+}
+
+function createBlockedWaitThread(overrides = {}) {
+  return {
+    kind: OPENMAS_OS_KINDS.thread,
+    schemaVersion: 1,
+    threadId: 'thread_status_blocked_wait_001',
+    processId: 'process_status_blocked_wait_001',
+    jobId: 'job_status_blocked_wait_001',
+    status: 'blocked',
+    threadType: 'agent_invocation',
+    priority: 40,
+    attempt: 1,
+    waitReason: 'waiting_for_resource',
+    dueAt: null,
+    createdAt: NOW,
+    startedAt: NOW,
+    updatedAt: NOW,
+    completedAt: null,
     ...overrides,
   };
 }
@@ -753,7 +838,7 @@ test('runOpenMasOsServiceCommand records failed manual --tick snapshots and rele
   const projectRootPath = await createTemporaryProjectRoot();
   const adapter = createLocalRuntimeAdapter({ projectRootPath });
   const stdout = createCaptureStream();
-  const tickError = new Error('Provider failed with sk-or-v1-secretvalue123456789 during manual tick.');
+  const tickError = new Error(`Provider failed with ${buildFakeOpenRouterSecretProbe('secretvalue123456789')} during manual tick.`);
 
   tickError.name = 'ManualTickFailure';
 
@@ -1306,6 +1391,143 @@ test('runOpenMasOsServiceCommand exposes recent normalized Result Records in sta
     stdout.text(),
     /- Result: delegated_child_result result_status_recent_bruce_001 -> completed/u,
   );
+});
+
+test('runOpenMasOsServiceCommand reports unsupported blocked resource waits as attention-required scheduler state', async () => {
+  const projectRootPath = await createTemporaryProjectRoot();
+  const adapter = createLocalRuntimeAdapter({ projectRootPath });
+  const stdout = createCaptureStream();
+
+  await adapter.persistJob(createBlockedWaitJob());
+  await adapter.persistProcess(createBlockedWaitProcess());
+  await adapter.persistThread(createBlockedWaitThread());
+
+  const commandResult = await runOpenMasOsServiceCommand({
+    argv: [
+      '--status',
+      '--project-root',
+      projectRootPath,
+      '--json',
+    ],
+    cwd: process.cwd(),
+    stdout,
+    now: () => STATUS_LATER,
+  });
+  const output = JSON.parse(stdout.text());
+
+  assert.equal(commandResult.mode, 'status');
+  assert.equal(output.blockedWaits.kind, 'openmas_os_blocked_wait_status_summary');
+  assert.equal(output.blockedWaits.status, 'attention_required');
+  assert.equal(output.blockedWaits.attentionRequired, true);
+  assert.equal(output.blockedWaits.count, 1);
+  assert.equal(output.blockedWaits.attentionCount, 1);
+  assert.equal(output.blockedWaits.reasonCounts.waiting_for_resource, 1);
+  assert.equal(output.blockedWaits.oldest[0].attentionReason, 'unsupported_foreground_resource_wait');
+  assert.equal(
+    output.summary.nextRecommendedAction,
+    'Inspect blocked scheduler waits; one or more waits require attention.',
+  );
+});
+
+test('runOpenMasOsServiceCommand reports syscall-trapped callers with terminal delegation results as attention-required', async () => {
+  const projectRootPath = await createTemporaryProjectRoot();
+  const adapter = createLocalRuntimeAdapter({ projectRootPath });
+  const inbox = createLocalSystemCallInbox({ projectRootPath });
+  const stdout = createCaptureStream();
+  const correlation = {
+    invocationId: 'invocation_status_trapped_syscall_001',
+    processId: 'process_status_blocked_wait_001',
+    threadId: 'thread_status_blocked_wait_001',
+    conversationId: 'alfred-admin',
+  };
+
+  await adapter.persistJob(createBlockedWaitJob());
+  await adapter.persistProcess(createBlockedWaitProcess());
+  await adapter.persistThread(createBlockedWaitThread({
+    waitReason: 'waiting_for_system_call',
+  }));
+  await inbox.submitSystemCall(createSystemCall({
+    systemCallId: 'syscall_status_trapped_expired_001',
+    idempotencyKey: 'delegate:status:trapped-expired:001',
+    correlation,
+  }));
+  await inbox.persistSystemCallResult(createSystemCallResult({
+    systemCallId: 'syscall_status_trapped_expired_001',
+    status: 'expired',
+    decision: {
+      allowed: false,
+      reason: 'System Call expired before processing.',
+    },
+    effects: {
+      createdJobIds: [],
+      createdTimerIds: [],
+      createdSignalIds: [],
+      createdProcessIds: [],
+      createdThreadIds: [],
+      eventIds: [],
+    },
+    summary: 'OpenMAS OS expired the trapped status test delegation.',
+    correlation,
+  }));
+  await inbox.moveSystemCall({
+    systemCallId: 'syscall_status_trapped_expired_001',
+    fromState: 'pending',
+    toState: 'expired',
+  });
+
+  const commandResult = await runOpenMasOsServiceCommand({
+    argv: [
+      '--status',
+      '--project-root',
+      projectRootPath,
+      '--json',
+    ],
+    cwd: process.cwd(),
+    stdout,
+    now: () => STATUS_LATER,
+  });
+  const output = JSON.parse(stdout.text());
+
+  assert.equal(commandResult.mode, 'status');
+  assert.equal(output.blockedWaits.status, 'attention_required');
+  assert.equal(output.blockedWaits.attentionCount, 1);
+  assert.equal(
+    output.blockedWaits.oldest[0].attentionReason,
+    'terminal_delegation_system_call_caller_stranded',
+  );
+  assert.equal(output.blockedWaits.oldest[0].terminalSystemCallId, 'syscall_status_trapped_expired_001');
+  assert.equal(output.blockedWaits.oldest[0].terminalSystemCallStatus, 'expired');
+});
+
+test('runOpenMasOsServiceCommand shows valid child waits in human status without a false alarm', async () => {
+  const projectRootPath = await createTemporaryProjectRoot();
+  const adapter = createLocalRuntimeAdapter({ projectRootPath });
+  const stdout = createCaptureStream();
+
+  await adapter.persistJob(createBlockedWaitJob());
+  await adapter.persistProcess(createBlockedWaitProcess());
+  await adapter.persistThread(createBlockedWaitThread({
+    waitReason: 'waiting_for_child_process',
+  }));
+
+  const commandResult = await runOpenMasOsServiceCommand({
+    argv: [
+      '--status',
+      '--project-root',
+      projectRootPath,
+    ],
+    cwd: process.cwd(),
+    stdout,
+    now: () => STATUS_LATER,
+  });
+  const output = stdout.text();
+
+  assert.equal(commandResult.result.blockedWaits.status, 'active');
+  assert.equal(commandResult.result.blockedWaits.attentionRequired, false);
+  assert.match(output, /Blocked Waits: 1/u);
+  assert.match(output, /Blocked Wait Health: active/u);
+  assert.match(output, /Blocked Wait Reasons: waiting_for_child_process=1/u);
+  assert.doesNotMatch(output, /Blocked Wait Attention/u);
 });
 
 test('runOpenMasOsServiceCommand reports running service status from heartbeat and lock evidence', async () => {
@@ -1887,7 +2109,7 @@ test('runOpenMasOsServiceCommand persists redacted watch tick failure evidence b
         tickCount += 1;
 
         if (tickCount === 1) {
-          throw new Error('Injected failure with sk-or-v1-secretvalue123456789.');
+          throw new Error(`Injected failure with ${buildFakeOpenRouterSecretProbe('secretvalue123456789')}.`);
         }
 
         return createTickResult({

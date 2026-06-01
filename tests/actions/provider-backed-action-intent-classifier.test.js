@@ -17,7 +17,7 @@ function buildPreparedProvider(overrides = {}) {
     providerId: 'openrouter-api',
     modelId: 'openrouter/free',
     resourceId: 'openrouter-api',
-    secretReferenceId: 'openrouter-api-key',
+    credentialReferenceId: 'openrouter-api-key',
     secretResolutionStatus: 'resolved',
     status: 'ready',
     reason: 'Provider is ready for intent classification tests.',
@@ -509,6 +509,58 @@ test('parseProviderIntentClassificationOutput repairs semantic-classifier known 
     'intentType',
     'intentId',
   ]);
+});
+
+test('parseProviderIntentClassificationOutput repairs request_metadata known-reference aliases to governed runtime context', () => {
+  const classifierRequest = buildClassifierRequest();
+  const baseIntent = buildClassifiedInspectIntent({
+    classifierRequest,
+  });
+
+  baseIntent.understanding.knownReferences = [
+    {
+      kind: 'action_known_reference',
+      version: 1,
+      referenceType: 'tool',
+      referenceId: 'mas.system.inspect',
+      source: 'request_metadata',
+      confidence: 'high',
+    },
+  ];
+
+  const parsedIntent = parseProviderIntentClassificationOutput({
+    outputText: JSON.stringify(baseIntent),
+    requestOriginalInput: classifierRequest.request.originalInput,
+  });
+
+  assert.equal(parsedIntent.understanding.knownReferences[0].source, 'runtime_context');
+  assert.ok(parsedIntent.metadata.providerOutputRepairs.includes('understanding.knownReferences'));
+});
+
+test('parseProviderIntentClassificationOutput repairs bounded request metadata path aliases to governed runtime context', () => {
+  const classifierRequest = buildClassifierRequest();
+  const baseIntent = buildClassifiedInspectIntent({
+    classifierRequest,
+  });
+
+  baseIntent.understanding.knownReferences = [
+    {
+      kind: 'action_known_reference',
+      version: 1,
+      referenceType: 'operational_identity',
+      referenceId: 'alfred',
+      source: 'request.metadata.operationalIdentityId',
+      confidence: 'high',
+    },
+  ];
+
+  const parsedIntent = parseProviderIntentClassificationOutput({
+    outputText: JSON.stringify(baseIntent),
+    requestOriginalInput: classifierRequest.request.originalInput,
+  });
+
+  assert.equal(parsedIntent.understanding.knownReferences[0].source, 'runtime_context');
+  assert.ok(parsedIntent.metadata.providerOutputRepairs.includes('understanding.knownReferences'));
 });
 
 test('parseProviderIntentClassificationOutput accepts invocation known references for governed plans', () => {

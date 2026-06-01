@@ -9,6 +9,7 @@ import { decideHumanApprovalRequest } from '../../src/approvals/decide-human-app
 import { readHumanApprovalState } from '../../src/approvals/read-human-approval-state.js';
 import { resumeApprovedToolRequest } from '../../src/approvals/resume-approved-tool-request.js';
 import { runAgentInvocation } from '../../src/invocation/run-agent-invocation.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   createAlfredProbabilisticProjectFixture,
   withEnvironment,
@@ -43,7 +44,7 @@ function buildApprovalRequiredToolVerdict(overrides = {}) {
         resourceId: 'meta-channel',
         resourceType: 'channel',
         accessMode: 'publish',
-        secretReferenceId: null,
+        credentialReferenceId: null,
         secretResolutionStatus: null,
       },
     ],
@@ -227,19 +228,19 @@ async function addApprovalRequiredPublishToolToAlfredFixture(projectRootPath) {
           resourceId: 'openrouter-api',
           accessMode: 'execute',
           bindingState: 'active',
-          secretReferenceId: 'openrouter-api-key',
+          credentialReferenceId: 'openrouter-api-key',
         },
         {
           resourceId: 'gemini-api',
           accessMode: 'execute',
           bindingState: 'active',
-          secretReferenceId: 'gemini-api-key',
+          credentialReferenceId: 'gemini-api-key',
         },
         {
           resourceId: 'meta-channel',
           accessMode: 'publish',
           bindingState: 'active',
-          secretReferenceId: null,
+          credentialReferenceId: null,
         },
       ],
     },
@@ -292,7 +293,7 @@ async function addApprovalRequiredPublishToolToAlfredFixture(projectRootPath) {
       '      replyText: input.replyText,',
       '      published: true,',
       '      approvalRequestId,',
-      '      secretToken: "sk-or-v1-test-secret-that-must-be-redacted"',
+      `      secretToken: "${buildFakeOpenRouterSecretProbe('test-secret-that-must-be-redacted')}"`,
       '    },',
       '    artifacts: [],',
       '    warnings: [],',
@@ -485,7 +486,7 @@ test('resumeApprovedToolRequest executes exactly one matching approved tool requ
   assert.equal(consumedState.approvalState.consumedByToolRunId, resumeResult.toolRunId);
   assert.equal(persistedAudit.audit.approvalRequestId, approvalRuntime.approvalRequest.approvalRequestId);
   assert.equal(persistedAudit.dataPreview.secretToken, '[REDACTED]');
-  assert.doesNotMatch(persistedAuditText, /sk-or-v1-test-secret-that-must-be-redacted/u);
+  assert.doesNotMatch(persistedAuditText, new RegExp(buildFakeOpenRouterSecretProbe('test-secret-that-must-be-redacted'), 'u'));
   assert.equal(replayResult.status, 'not_executed');
   assert.equal(replayResult.executionPerformed, false);
   assert.equal(replayResult.toolAuditRecordPath, null);

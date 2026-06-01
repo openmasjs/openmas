@@ -15,13 +15,13 @@ import {
   writeDurableMemoryRecord,
 } from '../helpers/create-alfred-probabilistic-fixture.js';
 
-const LIVE_OPENROUTER_SECRET_REFERENCE_ID = 'providers.openrouter.shared.default.api_key';
-const LIVE_GEMINI_SECRET_REFERENCE_ID = 'providers.gemini.shared.default.api_key';
+const LIVE_OPENROUTER_CREDENTIAL_REFERENCE_ID = 'providers.openrouter.shared.default.api_key';
+const LIVE_GEMINI_CREDENTIAL_REFERENCE_ID = 'providers.gemini.shared.default.api_key';
 
 async function readRequiredCredentialVaultSecrets() {
   const requiredSecretReferenceIds = [
-    LIVE_OPENROUTER_SECRET_REFERENCE_ID,
-    LIVE_GEMINI_SECRET_REFERENCE_ID,
+    LIVE_OPENROUTER_CREDENTIAL_REFERENCE_ID,
+    LIVE_GEMINI_CREDENTIAL_REFERENCE_ID,
   ];
   const credentials = await readLiveCredentialVault({
     requiredSecretReferenceIds,
@@ -99,8 +99,8 @@ async function main() {
 
     const projectRootPath = await createAlfredProbabilisticProjectFixture({
       credentialVaultSecrets: {
-        'openrouter-api-key': credentialVaultSecrets[LIVE_OPENROUTER_SECRET_REFERENCE_ID],
-        'gemini-api-key': credentialVaultSecrets[LIVE_GEMINI_SECRET_REFERENCE_ID],
+        'openrouter-api-key': credentialVaultSecrets[LIVE_OPENROUTER_CREDENTIAL_REFERENCE_ID],
+        'gemini-api-key': credentialVaultSecrets[LIVE_GEMINI_CREDENTIAL_REFERENCE_ID],
       },
     });
 

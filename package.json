@@ -15,6 +15,8 @@
     "test:live:alfred": "node ./tests/live/alfred-live-smoke-test.js",
     "test:live:bruce": "node ./tests/live/bruce-live-smoke-test.js",
     "test:live:delegation": "node ./tests/live/alfred-bruce-delegation-live-smoke-test.js",
+    "test:live:scheduled": "node ./tests/live/alfred-bruce-scheduled-live-smoke-test.js",
+    "test:live:evidence-secrets": "node ./tests/live/runtime-evidence-secret-leak-scan.js",
     "test:live:alfred:durable": "node ./tests/live/alfred-durable-context-smoke-test.js",
     "test:live:alfred:fallback": "node ./tests/live/alfred-fallback-smoke-test.js",
     "credentials:edit": "node ./bin/credentials.js edit",

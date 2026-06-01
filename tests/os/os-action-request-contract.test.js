@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   OPENMAS_OS_ACTION_KINDS,
   OPENMAS_OS_ACTION_RESULT_STATUSES,
@@ -189,7 +190,7 @@ test('assertOpenMasOsActionRequest rejects ambiguous scheduled times and raw sec
     () => assertOpenMasOsActionRequest(createDelegateRequest({
       payload: {
         targetOperationalIdentityId: 'bruce',
-        task: 'Use sk-or-v1-secretvalue1234567890 while inspecting.',
+        task: `Use ${buildFakeOpenRouterSecretProbe('secretvalue1234567890')} while inspecting.`,
       },
     })),
     /secret-like value/u,
@@ -200,7 +201,7 @@ test('assertOpenMasOsActionRequest rejects ambiguous scheduled times and raw sec
       payload: {
         targetOperationalIdentityId: 'bruce',
         task: 'Inspect the MAS.',
-        apiKey: 'sk-or-v1-secretvalue1234567890',
+        apiKey: buildFakeOpenRouterSecretProbe('secretvalue1234567890'),
       },
     })),
     /raw secret-like field/u,

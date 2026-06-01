@@ -11,6 +11,7 @@ import {
   synchronizeReadyThreadQueue,
 } from '../../src/os/scheduler/local-scheduler-dispatcher.js';
 import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const CREATED_AT = '2026-05-14T09:00:00-05:00';
 const STARTED_AT = '2026-05-14T10:00:00-05:00';
@@ -65,7 +66,7 @@ function createProcessForThread(thread, overrides = {}) {
     conversationId: null,
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: thread.createdAt,
@@ -239,7 +240,7 @@ test('LocalDispatcher persists safe failure evidence when execution throws', asy
   });
 
   const result = await dispatcher.dispatch(thread, async () => {
-    throw new Error('Provider rejected key sk-or-v1-secretvalue123456789.');
+    throw new Error(`Provider rejected key ${buildFakeOpenRouterSecretProbe('secretvalue123456789')}.`);
   });
 
   assert.equal(result.status, 'failed');
@@ -251,7 +252,7 @@ test('LocalDispatcher persists safe failure evidence when execution throws', asy
 
   const serializedEvents = JSON.stringify(await adapter.readEvents({ date: '2026-05-14' }));
 
-  assert.doesNotMatch(serializedEvents, /sk-or-v1-secretvalue/u);
+  assert.doesNotMatch(serializedEvents, new RegExp(buildFakeOpenRouterSecretProbe('secretvalue'), 'u'));
   assert.match(serializedEvents, /\[redacted-secret\]/u);
   assert.match(serializedEvents, /"failedAt":"2026-05-14T10:01:00-05:00"/u);
   assert.match(serializedEvents, /"reasonCode":"dispatch_failed"/u);

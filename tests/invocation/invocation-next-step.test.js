@@ -123,7 +123,7 @@ test('buildInvocationNextStep gives provider-specific guidance for failed brain 
   });
 
   assert.match(nextStep, /provider failure for gemini-api/u);
-  assert.match(nextStep, /secret references/u);
+  assert.match(nextStep, /credential references/u);
   assertNoHistoricalRoadmapLanguage(nextStep);
 });
 

@@ -96,7 +96,7 @@ function createProcess(overrides = {}) {
     conversationId: null,
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: CREATED_AT,

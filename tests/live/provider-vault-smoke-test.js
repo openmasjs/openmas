@@ -3,7 +3,7 @@
 import process from 'node:process';
 import { executeProviderRequest } from '../../src/providers/execute-provider-request.js';
 import {
-  LIVE_SECRET_REFERENCE_IDS,
+  LIVE_CREDENTIAL_REFERENCE_IDS,
   assertProviderCompleted,
   createProviderDiagnosticError,
   printRequiredSecretReferenceStatus,
@@ -12,13 +12,13 @@ import {
   runLiveSmokeMain,
 } from './live-smoke-helpers.js';
 
-function buildSecretResolution(secretReferenceId, secretValue) {
+function buildSecretResolution(credentialReferenceId, secretValue) {
   return {
-    resolvedSecretReferences: [
+    resolvedCredentialReferences: [
       {
         resourceId: 'live-provider-smoke-resource',
-        secretReferenceId,
-        secretType: 'api_key',
+        credentialReferenceId,
+        credentialType: 'api_key',
         resolutionStatus: 'resolved',
         reason: 'Runtime-only live smoke test secret.',
         hasSecretValue: true,
@@ -32,18 +32,18 @@ function buildSecretResolution(secretReferenceId, secretValue) {
     },
     warnings: [],
     secretValueByReferenceId: new Map([
-      [secretReferenceId, secretValue],
+      [credentialReferenceId, secretValue],
     ]),
   };
 }
 
-function buildPreparedProvider({ providerId, modelId, secretReferenceId }) {
+function buildPreparedProvider({ providerId, modelId, credentialReferenceId }) {
   return {
     brainId: `${providerId}-live-smoke`,
     providerId,
     modelId,
     resourceId: providerId,
-    secretReferenceId,
+    credentialReferenceId,
     secretResolutionStatus: 'resolved',
     status: 'ready',
     reason: 'Live provider smoke test is ready.',
@@ -51,15 +51,15 @@ function buildPreparedProvider({ providerId, modelId, secretReferenceId }) {
 }
 
 async function runGeminiSmokeTest(credentials) {
-  const secretReferenceId = LIVE_SECRET_REFERENCE_IDS.geminiSharedDefault;
-  const apiKey = requireVaultSecret(credentials, secretReferenceId, 'Gemini');
+  const credentialReferenceId = LIVE_CREDENTIAL_REFERENCE_IDS.geminiSharedDefault;
+  const apiKey = requireVaultSecret(credentials, credentialReferenceId, 'Gemini');
   const modelId = 'gemini-flash-latest';
 
   return executeProviderRequest({
     preparedProvider: buildPreparedProvider({
       providerId: 'gemini-api',
       modelId,
-      secretReferenceId,
+      credentialReferenceId,
     }),
     providerRequest: {
       providerId: 'gemini-api',
@@ -78,7 +78,7 @@ async function runGeminiSmokeTest(credentials) {
       temperature: 0.2,
       maxOutputTokens: 80,
     },
-    secretResolution: buildSecretResolution(secretReferenceId, apiKey),
+    secretResolution: buildSecretResolution(credentialReferenceId, apiKey),
   });
 }
 
@@ -87,21 +87,21 @@ function createGeminiSpec() {
     label: 'gemini-api',
     providerId: 'gemini-api',
     modelId: 'gemini-flash-latest',
-    secretReferenceId: LIVE_SECRET_REFERENCE_IDS.geminiSharedDefault,
+    credentialReferenceId: LIVE_CREDENTIAL_REFERENCE_IDS.geminiSharedDefault,
     run: runGeminiSmokeTest,
   };
 }
 
 async function runOpenRouterSmokeTest(credentials) {
-  const secretReferenceId = LIVE_SECRET_REFERENCE_IDS.openRouterSharedDefault;
-  const apiKey = requireVaultSecret(credentials, secretReferenceId, 'OpenRouter');
+  const credentialReferenceId = LIVE_CREDENTIAL_REFERENCE_IDS.openRouterSharedDefault;
+  const apiKey = requireVaultSecret(credentials, credentialReferenceId, 'OpenRouter');
   const modelId = 'openrouter/free';
 
   return executeProviderRequest({
     preparedProvider: buildPreparedProvider({
       providerId: 'openrouter-api',
       modelId,
-      secretReferenceId,
+      credentialReferenceId,
     }),
     providerRequest: {
       providerId: 'openrouter-api',
@@ -120,7 +120,7 @@ async function runOpenRouterSmokeTest(credentials) {
       temperature: 0.2,
       maxOutputTokens: 80,
     },
-    secretResolution: buildSecretResolution(secretReferenceId, apiKey),
+    secretResolution: buildSecretResolution(credentialReferenceId, apiKey),
   });
 }
 
@@ -129,14 +129,14 @@ function createOpenRouterSpec() {
     label: 'openrouter-api',
     providerId: 'openrouter-api',
     modelId: 'openrouter/free',
-    secretReferenceId: LIVE_SECRET_REFERENCE_IDS.openRouterSharedDefault,
+    credentialReferenceId: LIVE_CREDENTIAL_REFERENCE_IDS.openRouterSharedDefault,
     run: runOpenRouterSmokeTest,
   };
 }
 
 async function runOllamaSmokeTest(credentials) {
-  const secretReferenceId = LIVE_SECRET_REFERENCE_IDS.ollamaSharedDefault;
-  const apiKey = requireVaultSecret(credentials, secretReferenceId, 'Ollama');
+  const credentialReferenceId = LIVE_CREDENTIAL_REFERENCE_IDS.ollamaSharedDefault;
+  const apiKey = requireVaultSecret(credentials, credentialReferenceId, 'Ollama');
 
   const modelId = 'nemotron-3-super:cloud';
 
@@ -144,7 +144,7 @@ async function runOllamaSmokeTest(credentials) {
     preparedProvider: buildPreparedProvider({
       providerId: 'ollama-api',
       modelId,
-      secretReferenceId,
+      credentialReferenceId,
     }),
     providerRequest: {
       providerId: 'ollama-api',
@@ -163,7 +163,7 @@ async function runOllamaSmokeTest(credentials) {
       temperature: 0.2,
       maxOutputTokens: 80,
     },
-    secretResolution: buildSecretResolution(secretReferenceId, apiKey),
+    secretResolution: buildSecretResolution(credentialReferenceId, apiKey),
   });
 }
 
@@ -172,7 +172,7 @@ function createOllamaSpec() {
     label: 'ollama-api',
     providerId: 'ollama-api',
     modelId: 'nemotron-3-super:cloud',
-    secretReferenceId: LIVE_SECRET_REFERENCE_IDS.ollamaSharedDefault,
+    credentialReferenceId: LIVE_CREDENTIAL_REFERENCE_IDS.ollamaSharedDefault,
     run: runOllamaSmokeTest,
   };
 }
@@ -182,7 +182,7 @@ function printProviderResult(spec, result) {
   const outputText = result.outputText ?? '';
 
   console.log(`Provider: ${spec.label}`);
-  console.log(`Secret Reference: ${spec.secretReferenceId}`);
+  console.log(`Credential Reference: ${spec.credentialReferenceId}`);
   console.log(`Status: ${result.status}`);
   console.log(`Model: ${result.modelId}`);
 
@@ -215,7 +215,7 @@ async function runProviderProbe(spec, credentials) {
     assertProviderCompleted({
       providerId: spec.providerId,
       modelId: spec.modelId,
-      secretReferenceId: spec.secretReferenceId,
+      credentialReferenceId: spec.credentialReferenceId,
       result,
     });
 
@@ -229,12 +229,12 @@ async function runProviderProbe(spec, credentials) {
       : createProviderDiagnosticError({
           providerId: spec.providerId,
           modelId: spec.modelId,
-          secretReferenceId: spec.secretReferenceId,
+          credentialReferenceId: spec.credentialReferenceId,
           error,
         });
 
     console.log(`Provider: ${spec.label}`);
-    console.log(`Secret Reference: ${spec.secretReferenceId}`);
+    console.log(`Credential Reference: ${spec.credentialReferenceId}`);
     console.log('Status: failed');
     console.log(`Failure Phase: ${diagnosticError.phase}`);
     console.log(`Reason Code: ${diagnosticError.reasonCode}`);
@@ -263,7 +263,7 @@ async function main() {
       createOllamaSpec(),
     ];
     const requiredSecretReferenceIds = specs.map((spec) => {
-      return spec.secretReferenceId;
+      return spec.credentialReferenceId;
     });
     const credentials = await readLiveCredentialVault({
       requiredSecretReferenceIds,

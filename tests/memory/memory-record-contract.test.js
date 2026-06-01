@@ -215,7 +215,7 @@ test('assertMemoryRecord rejects portable memory outside cognitive identity scop
   );
 });
 
-test('assertMemoryRecord rejects secret-reference-only memory with raw content', () => {
+test('assertMemoryRecord rejects credential-reference-only memory with raw content', () => {
   assert.throws(
     () => assertMemoryRecord(buildMemoryRecord({
       sensitivityLevel: 'secret_reference_only',

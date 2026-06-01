@@ -21,24 +21,24 @@ async function createDirectoryTree(rootPath, relativePaths) {
   }
 }
 
-function createSecretReferenceRegistryContent({
+function createCredentialReferenceRegistryContent({
 } = {}) {
   return {
-    kind: 'secret_reference_registry',
+    kind: 'credential_reference_registry',
     version: 1,
-    secretReferences: [
+    credentialReferences: [
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'openrouter-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'openrouter-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'gemini-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'gemini-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
     ],
@@ -52,9 +52,9 @@ function createCredentialVaultContent(credentialVaultSecretOverrides = null) {
     ...(credentialVaultSecretOverrides ?? activeFixtureCredentialVaultSecretOverrides ?? {}),
   };
 
-  for (const [secretReferenceId, secretValue] of Object.entries(requestedSecrets)) {
+  for (const [credentialReferenceId, secretValue] of Object.entries(requestedSecrets)) {
     if (typeof secretValue === 'string' && secretValue.length > 0) {
-      credentials[secretReferenceId] = secretValue;
+      credentials[credentialReferenceId] = secretValue;
     }
   }
 
@@ -119,13 +119,13 @@ function createAlfredBindingsContent() {
         resourceId: 'openrouter-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'openrouter-api-key',
+        credentialReferenceId: 'openrouter-api-key',
       },
       {
         resourceId: 'gemini-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
       },
     ],
   };
@@ -391,7 +391,7 @@ export async function writeDurableMemoryRecord({ projectRootPath, memoryRecord }
 
 export async function createAlfredProbabilisticProjectFixture({
   executionMode = 'hybrid',
-  includeSecretRegistry = true,
+  includeCredentialReferenceRegistry = true,
   includeInspectionAffordances = false,
   credentialVaultSecrets = null,
 } = {}) {
@@ -486,10 +486,10 @@ export async function createAlfredProbabilisticProjectFixture({
     'utf8',
   );
 
-  if (includeSecretRegistry) {
+  if (includeCredentialReferenceRegistry) {
     await writeFile(
-      path.join(temporaryRootPath, 'config', 'secret-references.json'),
-      JSON.stringify(createSecretReferenceRegistryContent(), null, 2),
+      path.join(temporaryRootPath, 'config', 'credential-references.json'),
+      JSON.stringify(createCredentialReferenceRegistryContent(), null, 2),
       'utf8',
     );
     await writeDevelopmentCredentialVault({

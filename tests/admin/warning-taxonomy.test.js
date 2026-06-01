@@ -20,7 +20,7 @@ test('classifyWarning identifies permission and access warnings as action-requir
 
 test('classifyWarning identifies provider and secret readiness warnings', () => {
   const classifiedWarning = classifyWarning(
-    'Secret Reference providers.openrouter.shared.default.api_key is not resolved for provider openrouter-api.',
+    'Credential Reference providers.openrouter.shared.default.api_key is not resolved for provider openrouter-api.',
   );
 
   assert.equal(classifiedWarning.categoryId, 'provider_secrets');

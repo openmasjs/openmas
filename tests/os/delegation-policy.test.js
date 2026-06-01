@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   OPENMAS_OS_ACTION_KINDS,
 } from '../../src/contracts/openmas-os-action-request-contract.js';
@@ -121,7 +122,7 @@ test('assertDelegationPolicy rejects duplicate rules, non-deny default effects, 
       rules: [
         {
           ...createPolicy().rules[0],
-          apiKey: 'sk-or-v1-secretvalue1234567890',
+          apiKey: buildFakeOpenRouterSecretProbe('secretvalue1234567890'),
         },
       ],
     })),

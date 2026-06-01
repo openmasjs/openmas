@@ -199,7 +199,7 @@ function createParentProcess(overrides = {}) {
     conversationId: 'os-m2-scheduled-delegation-smoke',
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: CREATED_AT,
@@ -508,6 +508,33 @@ test('executeMasOsScheduleDelegation rejects a Cognitive Identity selector befor
   );
 });
 
+test('executeMasOsScheduleDelegation rejects missing parent lineage before submitting a System Call', async () => {
+  const { projectRootPath, inbox } = await createProjectFixture();
+
+  await assert.rejects(
+    () => executeMasOsScheduleDelegation({
+      input: createScheduleDelegationInput({
+        parentContext: {
+          jobId: null,
+          processId: null,
+          threadId: null,
+        },
+        systemCallId: 'syscall_schedule_delegation_missing_parent_lineage_001',
+      }),
+      projectRootPath,
+      operationalIdentityId: 'alfred',
+      invocationId: 'invocation-mas-os-schedule-delegation-missing-parent-lineage-001',
+      now: () => SCHEDULED_AT,
+    }),
+    /requires parentContext\.processId and parentContext\.threadId/u,
+  );
+
+  await assert.rejects(
+    () => inbox.loadPendingSystemCall('syscall_schedule_delegation_missing_parent_lineage_001'),
+    /was not found/u,
+  );
+});
+
 test('OpenMAS OS service processes mas.os.schedule_delegation System Call into child Job and Timer', async () => {
   const {
     projectRootPath,
@@ -757,8 +784,18 @@ test('executeAcceptedBrainToolRequest runs mas.os.schedule_delegation through th
     invocationId: 'invocation-mas-os-schedule-delegation-tool-001',
     operationalIdentityId: 'alfred',
     requestedBy: 'test-suite',
+    osRuntimeContext: {
+      jobId: 'job_parent_alfred',
+      processId: 'process_parent_alfred',
+      threadId: 'thread_parent_alfred',
+    },
     toolRequestResolution: buildAcceptedToolResolution(createScheduleDelegationInput({
       runAt: FUTURE_RUN_AT,
+      parentContext: {
+        jobId: 'job_untrusted',
+        processId: 'process_untrusted',
+        threadId: 'thread_untrusted',
+      },
     })),
     toolDefinitions: [await readMasOsScheduleDelegationToolDefinition()],
   });
@@ -767,6 +804,7 @@ test('executeAcceptedBrainToolRequest runs mas.os.schedule_delegation through th
   assert.equal(execution.executionPerformed, true);
   assert.equal(execution.requestedToolId, 'mas.os.schedule_delegation');
   assert.equal(execution.toolResultStatus, 'succeeded');
+  assert.equal(execution.continuationPolicy, 'return_kernel_acknowledgement');
   assert.equal(execution.observation.status, 'succeeded');
   assert.equal(execution.observation.dataPreview.scheduled, false);
   assert.equal(execution.observation.dataPreview.systemCall.operation, 'schedule_delegation');
@@ -778,6 +816,11 @@ test('executeAcceptedBrainToolRequest runs mas.os.schedule_delegation through th
 
   assert.equal(pendingSystemCall.payload.requesterOperationalIdentityId, 'alfred');
   assert.equal(pendingSystemCall.payload.targetOperationalIdentityId, 'bruce');
+  assert.deepEqual(pendingSystemCall.payload.parentContext, {
+    jobId: 'job_parent_alfred',
+    processId: 'process_parent_alfred',
+    threadId: 'thread_parent_alfred',
+  });
   await assert.rejects(
     () => adapter.loadJob(`job_${pendingSystemCallId}`),
     /was not found/u,

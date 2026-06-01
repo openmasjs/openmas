@@ -9,6 +9,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   assertOpenMasOsKernelLock,
   claimKernelLock,
@@ -382,7 +383,7 @@ test('kernel lock freshness uses heartbeat freshness and lock state stays secret
   await assert.rejects(
     () => claimKernelLock({
       projectRootPath,
-      serviceId: 'openmas_os_service_sk-or-v1-secret123456789',
+      serviceId: `openmas_os_service_${buildFakeOpenRouterSecretProbe('secret123456789')}`,
       staleAfterMs: 1000,
       now: () => NOW,
       pid: 101,

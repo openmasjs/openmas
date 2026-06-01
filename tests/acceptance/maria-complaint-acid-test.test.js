@@ -53,23 +53,23 @@ async function writePortableCognitiveIdentity({ projectRootPath, relativeCogniti
   await writeFile(path.join(cognitiveIdentityRootPath, 'capabilities.md'), '# Capabilities\n\n- Use role-specific context carefully.', 'utf8');
 }
 
-function createSecretReferenceRegistryContent() {
+function createCredentialReferenceRegistryContent() {
   return {
-    kind: 'secret_reference_registry',
+    kind: 'credential_reference_registry',
     version: 1,
-    secretReferences: [
+    credentialReferences: [
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'openrouter-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'openrouter-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'gemini-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'gemini-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
     ],
@@ -133,13 +133,13 @@ function createBindingsContent(operationalIdentityId) {
         resourceId: 'openrouter-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'openrouter-api-key',
+        credentialReferenceId: 'openrouter-api-key',
       },
       {
         resourceId: 'gemini-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
       },
     ],
   };
@@ -524,8 +524,8 @@ async function createMariaComplaintProjectFixture() {
     createResourcesRegistryContent(),
   );
   await writeJsonFile(
-    path.join(projectRootPath, 'config', 'secret-references.json'),
-    createSecretReferenceRegistryContent(),
+    path.join(projectRootPath, 'config', 'credential-references.json'),
+    createCredentialReferenceRegistryContent(),
   );
   await writeDevelopmentCredentialVault(projectRootPath);
 

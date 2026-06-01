@@ -72,13 +72,13 @@ function buildResourceDefinition({
 function buildBinding({
   resourceId,
   accessMode,
-  secretReferenceId = null,
+  credentialReferenceId = null,
 }) {
   return {
     resourceId,
     accessMode,
     bindingState: 'active',
-    secretReferenceId,
+    credentialReferenceId,
   };
 }
 
@@ -359,7 +359,7 @@ async function appendBindingAndPermission({
   projectRootPath,
   resourceId,
   accessMode,
-  secretReferenceId = null,
+  credentialReferenceId = null,
   ruleId,
 }) {
   const operationalIdentityRootPath = path.join(
@@ -377,7 +377,7 @@ async function appendBindingAndPermission({
     bindings.bindings.push(buildBinding({
       resourceId,
       accessMode,
-      secretReferenceId,
+      credentialReferenceId,
     }));
   }
 

@@ -6,13 +6,13 @@ import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { generateMasterKey } from '../../src/credentials/generate-master-key.js';
 import { writeCredentialVault } from '../../src/credentials/write-credential-vault.js';
 import {
-  assertSecretReferenceDefinition,
-  assertSecretReferenceRegistry,
-} from '../../src/contracts/secret-reference-contract.js';
+  assertCredentialReferenceDefinition,
+  assertCredentialReferenceRegistry,
+} from '../../src/contracts/credential-reference-contract.js';
 import { assertProviderIntegrationPreparation } from '../../src/contracts/provider-integration-contract.js';
-import { readSecretReferenceRegistry } from '../../src/secret-references/read-secret-reference-registry.js';
-import { resolveSecretReferenceDefinition } from '../../src/secret-references/resolve-secret-reference-definition.js';
-import { resolveSecretReferencesForInvocation } from '../../src/secret-references/resolve-secret-references-for-invocation.js';
+import { readCredentialReferenceRegistry } from '../../src/credential-references/read-credential-reference-registry.js';
+import { resolveCredentialReferenceDefinition } from '../../src/credential-references/resolve-credential-reference-definition.js';
+import { resolveCredentialReferencesForInvocation } from '../../src/credential-references/resolve-credential-references-for-invocation.js';
 import { prepareProviderIntegrationsForInvocation } from '../../src/providers/prepare-provider-integrations-for-invocation.js';
 import { runSystemBoot } from '../../src/boot/run-system-boot.js';
 import { prepareAgentInvocation } from '../../src/invocation/prepare-agent-invocation.js';
@@ -25,30 +25,30 @@ async function createDirectoryTree(rootPath, relativePaths) {
   }
 }
 
-function createSecretReferenceRegistryContent() {
+function createCredentialReferenceRegistryContent() {
   return {
-    kind: 'secret_reference_registry',
+    kind: 'credential_reference_registry',
     version: 1,
-    secretReferences: [
+    credentialReferences: [
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'gemini-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'gemini-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'openrouter-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'openrouter-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'alfred-whatsapp-token',
-        secretType: 'access_token',
+        credentialReferenceId: 'alfred-whatsapp-token',
+        credentialType: 'access_token',
         valueShape: 'string',
       },
     ],
@@ -111,13 +111,13 @@ function createAlfredBindingsContent() {
         resourceId: 'gemini-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
       },
       {
         resourceId: 'openrouter-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'openrouter-api-key',
+        credentialReferenceId: 'openrouter-api-key',
       },
       {
         resourceId: 'mas-filesystem',
@@ -128,7 +128,7 @@ function createAlfredBindingsContent() {
         resourceId: 'alfred-whatsapp',
         accessMode: 'publish',
         bindingState: 'draft',
-        secretReferenceId: 'alfred-whatsapp-token',
+        credentialReferenceId: 'alfred-whatsapp-token',
       },
     ],
   };
@@ -195,8 +195,8 @@ function withEnvironment(overrides, callback) {
     });
 }
 
-async function createProjectFixture({ includeSecretRegistry = true } = {}) {
-  const temporaryRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-secret-reference-'));
+async function createProjectFixture({ includeCredentialReferenceRegistry = true } = {}) {
+  const temporaryRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-credential-reference-'));
 
   await writeFile(
     path.join(temporaryRootPath, 'package.json'),
@@ -286,10 +286,10 @@ async function createProjectFixture({ includeSecretRegistry = true } = {}) {
     'utf8',
   );
 
-  if (includeSecretRegistry) {
+  if (includeCredentialReferenceRegistry) {
     await writeFile(
-      path.join(temporaryRootPath, 'config', 'secret-references.json'),
-      JSON.stringify(createSecretReferenceRegistryContent(), null, 2),
+      path.join(temporaryRootPath, 'config', 'credential-references.json'),
+      JSON.stringify(createCredentialReferenceRegistryContent(), null, 2),
       'utf8',
     );
   }
@@ -396,101 +396,101 @@ async function writeDevelopmentCredentialVault(projectRootPath, credentials = {
   return masterKeyHex;
 }
 
-test('assertSecretReferenceDefinition accepts a valid vault-backed secret reference', () => {
-  const definition = assertSecretReferenceDefinition({
-    kind: 'secret_reference_definition',
+test('assertCredentialReferenceDefinition accepts a valid vault-backed credential reference', () => {
+  const definition = assertCredentialReferenceDefinition({
+    kind: 'credential_reference_definition',
     version: 1,
-    secretReferenceId: 'gemini-api-key',
-    secretType: 'api_key',
+    credentialReferenceId: 'gemini-api-key',
+    credentialType: 'api_key',
     valueShape: 'string',
   });
 
-  assert.equal(definition.secretReferenceId, 'gemini-api-key');
-  assert.equal(definition.secretType, 'api_key');
+  assert.equal(definition.credentialReferenceId, 'gemini-api-key');
+  assert.equal(definition.credentialType, 'api_key');
   assert.equal(definition.valueShape, 'string');
 });
 
-test('assertSecretReferenceDefinition rejects legacy resolver types', () => {
+test('assertCredentialReferenceDefinition rejects legacy resolver types', () => {
   assert.throws(
-    () => assertSecretReferenceDefinition({
-      kind: 'secret_reference_definition',
+    () => assertCredentialReferenceDefinition({
+      kind: 'credential_reference_definition',
       version: 1,
-      secretReferenceId: 'gemini-api-key',
+      credentialReferenceId: 'gemini-api-key',
       resolverType: 'environment_variable',
-      secretType: 'api_key',
+      credentialType: 'api_key',
       valueShape: 'string',
     }),
     /must not include resolverType/,
   );
 });
 
-test('assertSecretReferenceRegistry rejects duplicate secretReferenceIds', () => {
+test('assertCredentialReferenceRegistry rejects duplicate credentialReferenceIds', () => {
   assert.throws(
-    () => assertSecretReferenceRegistry({
-      kind: 'secret_reference_registry',
+    () => assertCredentialReferenceRegistry({
+      kind: 'credential_reference_registry',
       version: 1,
-      secretReferences: [
+      credentialReferences: [
         {
-          kind: 'secret_reference_definition',
+          kind: 'credential_reference_definition',
           version: 1,
-          secretReferenceId: 'same-secret',
-          secretType: 'api_key',
+          credentialReferenceId: 'same-secret',
+          credentialType: 'api_key',
           valueShape: 'string',
         },
         {
-          kind: 'secret_reference_definition',
+          kind: 'credential_reference_definition',
           version: 1,
-          secretReferenceId: 'same-secret',
-          secretType: 'api_key',
+          credentialReferenceId: 'same-secret',
+          credentialType: 'api_key',
           valueShape: 'string',
         },
       ],
     }),
-    /duplicated secretReferenceId/,
+    /duplicated credentialReferenceId/,
   );
 });
 
-test('readSecretReferenceRegistry loads the secret reference registry', async () => {
+test('readCredentialReferenceRegistry loads the credential reference registry', async () => {
   const projectRootPath = await createProjectFixture();
 
-  const { registry } = await readSecretReferenceRegistry({ projectRootPath });
+  const { registry } = await readCredentialReferenceRegistry({ projectRootPath });
 
   assert.ok(registry);
-  assert.equal(registry.secretReferences.length, 3);
+  assert.equal(registry.credentialReferences.length, 3);
 });
 
-test('readSecretReferenceRegistry returns null when the registry file does not exist', async () => {
-  const projectRootPath = await createProjectFixture({ includeSecretRegistry: false });
+test('readCredentialReferenceRegistry returns null when the registry file does not exist', async () => {
+  const projectRootPath = await createProjectFixture({ includeCredentialReferenceRegistry: false });
 
-  const { registry } = await readSecretReferenceRegistry({ projectRootPath });
+  const { registry } = await readCredentialReferenceRegistry({ projectRootPath });
 
   assert.equal(registry, null);
 });
 
-test('resolveSecretReferenceDefinition finds a secret reference by id', () => {
-  const registry = assertSecretReferenceRegistry(createSecretReferenceRegistryContent());
+test('resolveCredentialReferenceDefinition finds a credential reference by id', () => {
+  const registry = assertCredentialReferenceRegistry(createCredentialReferenceRegistryContent());
 
-  const definition = resolveSecretReferenceDefinition({
-    secretReferenceRegistry: registry,
-    secretReferenceId: 'gemini-api-key',
+  const definition = resolveCredentialReferenceDefinition({
+    credentialReferenceRegistry: registry,
+    credentialReferenceId: 'gemini-api-key',
   });
 
   assert.equal(definition.valueShape, 'string');
 });
 
-test('resolveSecretReferencesForInvocation resolves vault-backed secrets without leaking values', async () => {
+test('resolveCredentialReferencesForInvocation resolves vault-backed secrets without leaking values', async () => {
   const projectRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-secret-vault-'));
   await writeDevelopmentCredentialVault(projectRootPath);
-  const registry = assertSecretReferenceRegistry(createSecretReferenceRegistryContent());
+  const registry = assertCredentialReferenceRegistry(createCredentialReferenceRegistryContent());
 
-  const result = await resolveSecretReferencesForInvocation({
+  const result = await resolveCredentialReferencesForInvocation({
     projectRootPath,
     usableBindings: [
       {
         resourceId: 'gemini-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
         resourceType: 'brain-provider',
         resourceLifecycleState: 'active',
       },
@@ -498,12 +498,12 @@ test('resolveSecretReferencesForInvocation resolves vault-backed secrets without
         resourceId: 'openrouter-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'openrouter-api-key',
+        credentialReferenceId: 'openrouter-api-key',
         resourceType: 'brain-provider',
         resourceLifecycleState: 'active',
       },
     ],
-    secretReferenceRegistry: registry,
+    credentialReferenceRegistry: registry,
   });
 
   assert.equal(result.credentialVaultEnvironment, 'development');
@@ -512,28 +512,28 @@ test('resolveSecretReferencesForInvocation resolves vault-backed secrets without
   assert.equal(result.summary.resolved, 2);
   assert.equal(result.summary.unresolved, 0);
   assert.equal(result.summary.missingDefinitions, 0);
-  assert.equal(result.resolvedSecretReferences[0].hasSecretValue, true);
+  assert.equal(result.resolvedCredentialReferences[0].hasSecretValue, true);
   assert.equal(typeof result.secretValueByReferenceId.get('gemini-api-key'), 'string');
-  assert.equal(result.resolvedSecretReferences[0].secretValue, undefined);
-  assert.equal(result.resolvedSecretReferences[0].environmentVariableName, undefined);
-  assert.equal(result.resolvedSecretReferences[0].resolverType, undefined);
+  assert.equal(result.resolvedCredentialReferences[0].secretValue, undefined);
+  assert.equal(result.resolvedCredentialReferences[0].environmentVariableName, undefined);
+  assert.equal(result.resolvedCredentialReferences[0].resolverType, undefined);
 });
 
-test('resolveSecretReferencesForInvocation reports unresolved and missing-definition references', async () => {
+test('resolveCredentialReferencesForInvocation reports unresolved and missing-definition references', async () => {
   const projectRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-secret-vault-'));
   await writeDevelopmentCredentialVault(projectRootPath, {
     'openrouter-api-key': 'openrouter-secret',
   });
-  const registry = assertSecretReferenceRegistry(createSecretReferenceRegistryContent());
+  const registry = assertCredentialReferenceRegistry(createCredentialReferenceRegistryContent());
 
-  const result = await resolveSecretReferencesForInvocation({
+  const result = await resolveCredentialReferencesForInvocation({
     projectRootPath,
     usableBindings: [
       {
         resourceId: 'gemini-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
         resourceType: 'brain-provider',
         resourceLifecycleState: 'active',
       },
@@ -541,12 +541,12 @@ test('resolveSecretReferencesForInvocation reports unresolved and missing-defini
         resourceId: 'ghost-provider',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'missing-secret-reference',
+        credentialReferenceId: 'missing-credential-reference',
         resourceType: 'brain-provider',
         resourceLifecycleState: 'active',
       },
     ],
-    secretReferenceRegistry: registry,
+    credentialReferenceRegistry: registry,
   });
 
   assert.equal(result.summary.totalReferenced, 2);
@@ -563,31 +563,31 @@ test('prepareProviderIntegrationsForInvocation prepares future brain and channel
         resourceId: 'gemini-api',
         accessMode: 'execute',
         resourceType: 'brain-provider',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
       },
       {
         resourceId: 'community-whatsapp',
         accessMode: 'publish',
         resourceType: 'channel',
-        secretReferenceId: 'community-whatsapp-token',
+        credentialReferenceId: 'community-whatsapp-token',
       },
     ],
     secretResolution: {
-      resolvedSecretReferences: [
+      resolvedCredentialReferences: [
         {
           resourceId: 'gemini-api',
-          secretReferenceId: 'gemini-api-key',
+          credentialReferenceId: 'gemini-api-key',
           resolutionStatus: 'resolved',
-          secretType: 'api_key',
+          credentialType: 'api_key',
           valueShape: 'string',
           reason: 'resolved',
           hasSecretValue: true,
         },
         {
           resourceId: 'community-whatsapp',
-          secretReferenceId: 'community-whatsapp-token',
+          credentialReferenceId: 'community-whatsapp-token',
           resolutionStatus: 'unresolved',
-          secretType: 'access_token',
+          credentialType: 'access_token',
           valueShape: 'string',
           reason: 'missing vault secret',
           hasSecretValue: false,
@@ -618,7 +618,7 @@ test('prepareProviderIntegrationsForInvocation prepares future brain and channel
   assert.equal(preparation.channelProviders[0].status, 'not_ready');
 });
 
-test('prepareAgentInvocation resolves secret references and provider preparation for Alfred', async () => {
+test('prepareAgentInvocation resolves credential references and provider preparation for Alfred', async () => {
   await withEnvironment(
     {
       OPENMAS_ENV: null,
@@ -673,7 +673,7 @@ test('runAgentInvocation persists secret and provider summaries without secret v
       assert.ok(invocationSession.providerPreparation);
       assert.equal(invocationSession.providerPreparation.selectedBrainProvider.status, 'ready');
       assert.equal(invocationSession.secretResolution.secretValueByReferenceId, undefined);
-      assert.equal(invocationSession.secretResolution.resolvedSecretReferences[0].secretValue, undefined);
+      assert.equal(invocationSession.secretResolution.resolvedCredentialReferences[0].secretValue, undefined);
     },
   );
 });

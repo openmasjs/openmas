@@ -200,7 +200,7 @@ test('runAgentInvocation resolves provider secrets from the development vault wi
   );
 });
 
-test('runAgentInvocation does not silently apply legacy intent compatibility when semantic runtime is disabled', async () => {
+test('runAgentInvocation keeps runtime action resolution inert when semantic runtime is disabled', async () => {
   await withEnvironment(
     {
       "openrouter-api-key": 'openrouter-secret',
@@ -243,7 +243,7 @@ test('runAgentInvocation does not silently apply legacy intent compatibility whe
       });
 
       assert.equal(result.status, 'completed');
-      assert.doesNotMatch(result.warnings.join('\n'), /Legacy intent compatibility mode is enabled/u);
+      assert.doesNotMatch(result.warnings.join('\n'), /legacy intent compatibility/iu);
 
       const invocationSession = JSON.parse(await readFile(result.persistence.invocationSessionRecordPath, 'utf8'));
 
@@ -251,75 +251,10 @@ test('runAgentInvocation does not silently apply legacy intent compatibility whe
       assert.equal(invocationSession.intentResolution.status, 'skipped');
       assert.match(
         invocationSession.intentResolution.reason,
-        /Legacy intent compatibility is disabled/u,
+        /Semantic intent runtime is disabled/u,
       );
       assert.equal(invocationSession.toolRequestResolution.status, 'no_request');
       assert.equal(invocationSession.brainToolExecution.executionPerformed, false);
-    },
-  );
-});
-
-test('runAgentInvocation applies legacy intent compatibility only when explicitly enabled', async () => {
-  await withEnvironment(
-    {
-      "openrouter-api-key": 'openrouter-secret',
-      "gemini-api-key": 'gemini-secret',
-    },
-    async () => {
-      const projectRootPath = await createProjectFixture();
-      let providerCallCount = 0;
-
-      const result = await runAgentInvocation({
-        projectRootPath,
-        operationalIdentityId: 'alfred',
-        invocationMode: 'probabilistic',
-        command: 'ask',
-        inputText: 'Please inspect the MAS for me.',
-        requestedBy: 'cli',
-        semanticIntentRuntimeMode: 'disabled',
-        legacyIntentCompatibilityMode: 'compatibility',
-        fetchImplementation: async () => {
-          providerCallCount += 1;
-
-          return {
-            ok: true,
-            async json() {
-              return {
-                id: `openrouter-probabilistic-response-legacy-enabled-${providerCallCount}`,
-                choices: [
-                  {
-                    finish_reason: 'stop',
-                    message: {
-                      content: providerCallCount === 1
-                        ? 'I will help with that request.'
-                        : 'I completed the read-only MAS inspection and can summarize the findings.',
-                    },
-                  },
-                ],
-                usage: {
-                  prompt_tokens: 110,
-                  completion_tokens: 18,
-                  total_tokens: 128,
-                },
-              };
-            },
-          };
-        },
-      });
-
-      assert.equal(result.status, 'completed');
-      assert.equal(providerCallCount >= 1, true);
-      assert.match(result.warnings.join('\n'), /Legacy intent compatibility mode is enabled/u);
-
-      const invocationSession = JSON.parse(await readFile(result.persistence.invocationSessionRecordPath, 'utf8'));
-
-      assert.equal(invocationSession.semanticIntentRuntime.mode, 'disabled');
-      assert.equal(invocationSession.intentResolution.status, 'blocked');
-      assert.equal(invocationSession.intentResolution.source, 'runtime_pattern');
-      assert.equal(invocationSession.intentResolution.target.targetId, 'mas.system.inspect');
-      assert.equal(invocationSession.toolRequestResolution.status, 'no_request');
-      assert.equal(invocationSession.brainToolExecution.executionPerformed, false);
-      assert.match(invocationSession.intentResolution.reason, /was not executable/u);
     },
   );
 });
@@ -588,7 +523,7 @@ test('runAgentInvocation blocks probabilistic mode when selected and fallback pr
 
       assert.equal(providerCallCount, 0);
       assert.equal(result.status, 'blocked');
-      assert.match(result.message, /Secret Reference openrouter-api-key is not resolved/u);
+      assert.match(result.message, /Credential Reference openrouter-api-key is not resolved/u);
       assert.equal(result.persistence, null);
       assert.equal(result.readiness.secretResolution.credentialVaultEnvironment, 'development');
       assert.equal(result.readiness.secretResolution.summary.resolved, 0);

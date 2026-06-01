@@ -12,6 +12,7 @@ import {
   runDelegatedJobNow,
 } from '../../src/os/delegation/delegation-manager.js';
 import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const CREATED_AT = '2026-05-14T10:00:00-05:00';
 const DELEGATED_AT = '2026-05-14T10:01:00-05:00';
@@ -160,7 +161,7 @@ function createParentProcess(overrides = {}) {
     conversationId: 'alfred_admin',
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: CREATED_AT,
@@ -605,6 +606,12 @@ test('runDelegatedJobAndResumeParentNow propagates child warnings through child 
           invocationSessionRecordPath: 'instance/memory/state/agent-invocation-maria-warning.json',
           invocationReportPath: 'instance/memory/artifacts/probabilistic-brain-invocation-maria-warning.md',
         },
+        verificationGate: {
+          status: 'failed',
+          verificationOutcome: 'not_verified',
+          executionObserved: false,
+          reason: 'Runtime evidence did not support the delegated child claim.',
+        },
       };
     },
     parentInvocationRunner: async (options) => {
@@ -626,11 +633,14 @@ test('runDelegatedJobAndResumeParentNow propagates child warnings through child 
   assert.equal(result.status, 'final_answer_completed');
   assert.equal(result.childExecution.childResultRecord.status, 'completed_with_warnings');
   assert.equal(result.childExecution.childResultRecord.warnings[0].message, childWarning);
+  assert.equal(result.childExecution.childResultRecord.warnings[0].affectsResultTrust, true);
+  assert.equal(result.childExecution.childResultRecord.verification.status, 'failed');
   assert.equal(result.parentResumeResultRecord.status, 'completed_with_warnings');
   assert.deepEqual(result.parentResumeResultRecord.childResultRefs, [
     result.childExecution.childResultRecord.resultId,
   ]);
   assert.equal(result.parentResumeResultRecord.warnings[0].message, childWarning);
+  assert.equal(result.parentResumeResultRecord.warnings[0].affectsResultTrust, true);
   assert.equal(result.parentResumeResultRecord.warnings[0].details.reasonCode, 'child_result_warning');
   assert.equal(result.parentResumeResult.child.warningCount, 1);
 });
@@ -930,7 +940,7 @@ test('delegateToOperationalIdentity rejects unsafe raw secret-like delegation pa
       delegation: createDelegation({
         inputRef: {
           type: 'inline_text',
-          text: 'Use sk-or-v1-secretvalue1234567890 for this request.',
+          text: `Use ${buildFakeOpenRouterSecretProbe('secretvalue1234567890')} for this request.`,
         },
       }),
       allowedDelegations: ALLOW_ALFRED_TO_MARIA,

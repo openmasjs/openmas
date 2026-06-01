@@ -94,24 +94,24 @@ function buildPreparedChannel(overrides = {}) {
   return {
     resourceId: 'instagram-community-channel',
     accessMode: 'publish',
-    secretReferenceId: 'instagram-channel-token',
+    credentialReferenceId: 'instagram-channel-token',
     secretResolutionStatus: 'resolved',
     status: 'ready',
-    reason: 'Channel is ready for delivery through a resolved secret reference.',
+    reason: 'Channel is ready for delivery through a resolved credential reference.',
     ...overrides,
   };
 }
 
 function buildSecretResolution({
-  secretReferenceId = 'instagram-channel-token',
+  credentialReferenceId = 'instagram-channel-token',
   secretValue = SECRET_VALUE,
 } = {}) {
   return {
-    resolvedSecretReferences: [
+    resolvedCredentialReferences: [
       {
         resourceId: 'instagram-community-channel',
-        secretReferenceId,
-        secretType: 'access_token',
+        credentialReferenceId,
+        credentialType: 'access_token',
         resolutionStatus: 'resolved',
         reason: 'resolved',
         hasSecretValue: true,
@@ -125,7 +125,7 @@ function buildSecretResolution({
     },
     warnings: [],
     secretValueByReferenceId: new Map([
-      [secretReferenceId, secretValue],
+      [credentialReferenceId, secretValue],
     ]),
   };
 }
@@ -208,7 +208,7 @@ test('executeChannelDeliveryRequest enforces prepared channel resource and secre
     () => executeChannelDeliveryRequest({
       preparedChannel: buildPreparedChannel({
         status: 'not_ready',
-        reason: 'Secret Reference is unresolved.',
+        reason: 'Credential Reference is unresolved.',
       }),
       deliveryRequest,
       secretResolution: buildSecretResolution(),
@@ -234,7 +234,7 @@ test('executeChannelDeliveryRequest enforces prepared channel resource and secre
   await assert.rejects(
     () => executeChannelDeliveryRequest({
       preparedChannel: buildPreparedChannel({
-        secretReferenceId: 'missing-token',
+        credentialReferenceId: 'missing-token',
       }),
       deliveryRequest,
       secretResolution: buildSecretResolution(),

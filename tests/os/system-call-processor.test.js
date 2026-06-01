@@ -15,7 +15,10 @@ import {
 import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
 import { createLocalSystemCallInbox } from '../../src/os/system-calls/local-system-call-inbox.js';
-import { createKernelSystemCallProcessor } from '../../src/os/system-calls/system-call-processor.js';
+import {
+  createKernelSystemCallProcessor,
+  reconcileTerminalDelegationSystemCallCallers,
+} from '../../src/os/system-calls/system-call-processor.js';
 
 const CREATED_AT = '2026-05-19T09:00:00-05:00';
 const PROCESSED_AT = '2026-05-19T09:05:00-05:00';
@@ -108,7 +111,7 @@ function createParentProcess(overrides = {}) {
     conversationId: 'alfred-admin',
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: CREATED_AT,
@@ -310,6 +313,207 @@ test('KernelSystemCallProcessor completes delegate calls from a parent blocked o
   assert.equal(childJob.status, 'ready');
   assert.equal(blockedParentThread.status, 'blocked');
   assert.equal(blockedParentThread.waitReason, 'waiting_for_child_process');
+});
+
+test('KernelSystemCallProcessor terminalizes a syscall-trapped parent when delegation is denied', async () => {
+  const {
+    adapter,
+    inbox,
+    processor,
+  } = await createProcessorFixture();
+  const parentProcess = await adapter.loadProcess('process_parent_alfred');
+  const parentThread = await adapter.loadThread('thread_parent_alfred');
+
+  await adapter.persistThread({
+    ...parentThread,
+    status: 'blocked',
+    waitReason: 'waiting_for_system_call',
+    updatedAt: CREATED_AT,
+  });
+  await adapter.persistProcess({
+    ...parentProcess,
+    status: 'blocked',
+    updatedAt: CREATED_AT,
+  });
+  await inbox.submitSystemCall(createSystemCall({
+    systemCallId: 'syscall_delegate_waiting_parent_denied_001',
+    idempotencyKey: 'delegate:alfred:maria:waiting-parent-denied:001',
+    payload: {
+      requesterOperationalIdentityId: 'alfred',
+      targetOperationalIdentityId: 'maria',
+      child: {
+        input: 'Inspect the MAS and report findings.',
+        command: 'ask',
+        mode: 'probabilistic',
+      },
+    },
+  }));
+
+  const processorResult = await processor.processPendingSystemCalls();
+  const failedJob = await adapter.loadJob('job_parent_alfred');
+  const failedProcess = await adapter.loadProcess('process_parent_alfred');
+  const failedThread = await adapter.loadThread('thread_parent_alfred');
+  const result = await inbox.loadSystemCallResult('syscall_delegate_waiting_parent_denied_001');
+
+  assert.equal(processorResult.deniedCount, 1);
+  assert.equal(processorResult.results[0].callerSettlement.status, 'terminalized');
+  assert.equal(result.status, 'denied');
+  assert.equal(failedJob.status, 'failed');
+  assert.equal(failedProcess.status, 'failed');
+  assert.equal(failedProcess.currentThreadId, null);
+  assert.equal(failedThread.status, 'failed');
+  assert.equal(failedThread.waitReason, null);
+  assert.equal(failedThread.failureSummary.reasonCode, 'terminal_delegation_system_call_failed');
+});
+
+test('KernelSystemCallProcessor terminalizes a syscall-trapped parent when delegation expires', async () => {
+  const {
+    adapter,
+    inbox,
+    processor,
+  } = await createProcessorFixture();
+  const parentProcess = await adapter.loadProcess('process_parent_alfred');
+  const parentThread = await adapter.loadThread('thread_parent_alfred');
+
+  await adapter.persistThread({
+    ...parentThread,
+    status: 'blocked',
+    waitReason: 'waiting_for_system_call',
+    updatedAt: CREATED_AT,
+  });
+  await adapter.persistProcess({
+    ...parentProcess,
+    status: 'blocked',
+    updatedAt: CREATED_AT,
+  });
+  await inbox.submitSystemCall(createSystemCall({
+    systemCallId: 'syscall_delegate_waiting_parent_expired_001',
+    idempotencyKey: 'delegate:alfred:bruce:waiting-parent-expired:001',
+    expiresAt: '2026-05-19T09:01:00-05:00',
+  }));
+
+  const processorResult = await processor.processPendingSystemCalls();
+  const failedProcess = await adapter.loadProcess('process_parent_alfred');
+  const failedThread = await adapter.loadThread('thread_parent_alfred');
+
+  assert.equal(processorResult.expiredCount, 1);
+  assert.equal(processorResult.results[0].callerSettlement.status, 'terminalized');
+  assert.equal(failedProcess.status, 'failed');
+  assert.equal(failedThread.status, 'failed');
+  assert.equal(failedThread.failureSummary.reasonCode, 'terminal_delegation_system_call_failed');
+});
+
+test('reconcileTerminalDelegationSystemCallCallers repairs a historical syscall-trapped parent without deleting evidence', async () => {
+  const {
+    adapter,
+    inbox,
+  } = await createProcessorFixture();
+  const parentProcess = await adapter.loadProcess('process_parent_alfred');
+  const parentThread = await adapter.loadThread('thread_parent_alfred');
+  const systemCall = createSystemCall({
+    systemCallId: 'syscall_delegate_historical_expired_001',
+    idempotencyKey: 'delegate:alfred:bruce:historical-expired:001',
+    expiresAt: '2026-05-19T09:01:00-05:00',
+  });
+
+  await adapter.persistThread({
+    ...parentThread,
+    status: 'blocked',
+    waitReason: 'waiting_for_system_call',
+    updatedAt: CREATED_AT,
+  });
+  await adapter.persistProcess({
+    ...parentProcess,
+    status: 'blocked',
+    updatedAt: CREATED_AT,
+  });
+  await inbox.submitSystemCall(systemCall);
+  await inbox.persistSystemCallResult({
+    kind: OPENMAS_OS_SYSTEM_CALL_KINDS.result,
+    schemaVersion: 1,
+    systemCallId: systemCall.systemCallId,
+    operation: 'delegate',
+    status: 'expired',
+    processedAt: PROCESSED_AT,
+    processedBy: {
+      serviceId: 'openmas_os_service_historical',
+      tickId: 'os_service_tick_historical',
+    },
+    decision: {
+      allowed: false,
+      reason: 'System call expired before processing.',
+    },
+    effects: {
+      createdJobIds: [],
+      createdTimerIds: [],
+      createdSignalIds: [],
+      createdProcessIds: [],
+      createdThreadIds: [],
+      eventIds: [],
+    },
+    summary: 'OpenMAS OS expired the historical delegation system call.',
+    correlation: systemCall.correlation,
+    evidenceRefs: [],
+    warnings: [],
+    details: {},
+  });
+  await inbox.moveSystemCall({
+    systemCallId: systemCall.systemCallId,
+    fromState: 'pending',
+    toState: 'expired',
+  });
+
+  const reconciliation = await reconcileTerminalDelegationSystemCallCallers({
+    adapter,
+    inbox,
+    observedAt: PROCESSED_AT,
+  });
+
+  assert.equal(reconciliation.terminalizedCount, 1);
+  assert.equal((await adapter.loadJob('job_parent_alfred')).status, 'failed');
+  assert.equal((await adapter.loadProcess('process_parent_alfred')).status, 'failed');
+  assert.equal((await adapter.loadThread('thread_parent_alfred')).status, 'failed');
+  assert.equal(
+    (await inbox.loadSystemCallResult(systemCall.systemCallId)).status,
+    'expired',
+  );
+  assert.equal(
+    (await inbox.loadSystemCall(systemCall.systemCallId, 'expired')).status,
+    'expired',
+  );
+});
+
+test('reconcileTerminalDelegationSystemCallCallers degrades safely when historical result evidence is malformed', async () => {
+  const {
+    projectRootPath,
+    adapter,
+    inbox,
+  } = await createProcessorFixture();
+  const resultsRootPath = path.join(
+    projectRootPath,
+    'instance',
+    'os',
+    'system-calls',
+    'results',
+  );
+
+  await mkdir(resultsRootPath, { recursive: true });
+  await writeFile(
+    path.join(resultsRootPath, 'syscall_delegate_broken_historical_001.result.json'),
+    '{',
+    'utf8',
+  );
+
+  const reconciliation = await reconcileTerminalDelegationSystemCallCallers({
+    adapter,
+    inbox,
+    observedAt: PROCESSED_AT,
+  });
+
+  assert.equal(reconciliation.status, 'completed_with_failures');
+  assert.equal(reconciliation.failedCount, 1);
+  assert.equal(reconciliation.failures[0].systemCallId, null);
+  assert.match(reconciliation.failures[0].errorMessage, /could not be parsed as JSON/u);
 });
 
 test('KernelSystemCallProcessor processes allowed scheduled delegation calls and materializes child Job plus Timer', async () => {

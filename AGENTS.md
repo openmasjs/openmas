@@ -28,8 +28,20 @@ Trusted staged surfaces for this commit:
 Current verified gates:
 
 ```text
-npm run lint        -> passes for tests/
-npm test            -> 1178 passing, 0 failing
+npm run lint                                             -> passes for tests/
+npm test                                                 -> 1201 passing, 0 failing
+node --test tests/invocation/os-tool-continuation-policy.test.js -> 2 passing, 0 failing
+```
+
+Live smoke gates verified:
+
+```text
+npm run test:live:providers         -> passed for Gemini, OpenRouter, and Ollama
+npm run test:live:alfred            -> completed_with_warnings; safe semantic-classifier warning only
+npm run test:live:bruce             -> completed
+npm run test:live:delegation        -> submitted pending; OS ticks completed child work and parent resume
+npm run test:live:scheduled         -> submitted pending; OS ticks completed scheduled release and child work
+npm run test:live:evidence-secrets  -> passed; 602 evidence files scanned, 0 resolved secret findings
 ```
 
 ESLint is a development dependency only. It is not part of the OpenMAS runtime.
@@ -62,6 +74,8 @@ Before proposing or committing changes to current source or tests, run:
 npm run lint
 npm test
 ```
+
+`npm run lint` covers `tests/`. Keep the lint gate quiet; do not leave warnings behind unless the maintainers explicitly accept them.
 
 The default deterministic test suite is offline and must remain the normal confidence gate.
 
@@ -136,4 +150,3 @@ git diff --cached --name-only
 ```
 
 Do not stage broad generated folders by accident. If in doubt, stage exact files.
-

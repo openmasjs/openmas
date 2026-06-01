@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { generateMasterKey } from '../../src/credentials/generate-master-key.js';
 import { encryptCredentialVault } from '../../src/credentials/encrypt-credential-vault.js';
 import { decryptCredentialVault } from '../../src/credentials/decrypt-credential-vault.js';
+import { buildFakeAnthropicSecretProbe, buildFakeGeminiSecretProbe, buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 // --- generateMasterKey Tests ---
 
@@ -30,7 +31,7 @@ test('generateMasterKey returns a different key on each call', () => {
 
 test('encrypt then decrypt returns the original plaintext', () => {
   const key = generateMasterKey();
-  const plaintext = JSON.stringify({ 'gemini-api-key': 'AIzaSy123', 'openrouter-api-key': 'sk-or-v1-abc' });
+  const plaintext = JSON.stringify({ 'gemini-api-key': buildFakeGeminiSecretProbe('Sy123'), 'openrouter-api-key': buildFakeOpenRouterSecretProbe('abc') });
 
   const encrypted = encryptCredentialVault(plaintext, key);
   const decrypted = decryptCredentialVault(encrypted, key);
@@ -89,11 +90,11 @@ test('encrypt then decrypt works with unicode content', () => {
 test('encrypt then decrypt preserves all key-value pairs', () => {
   const key = generateMasterKey();
   const credentials = {
-    'openrouter-api-key': 'sk-or-v1-abc123def456',
-    'gemini-api-key': 'AIzaSyA1B2C3D4E5F6',
+    'openrouter-api-key': buildFakeOpenRouterSecretProbe('abc123def456'),
+    'gemini-api-key': buildFakeGeminiSecretProbe('SyA1B2C3D4E5F6'),
     'ollama-api-key': 'ollama-cloud-key-xyz',
     'chatgpt-api-key': 'sk-proj-abc123',
-    'claude-api-key': 'sk-ant-api03-abc123',
+    'claude-api-key': buildFakeAnthropicSecretProbe('api03-abc123'),
     'alfred-whatsapp-token': 'EAABsbCS1IDBAO',
     'maria-instagram-token': 'IGQVJWZArV2',
   };

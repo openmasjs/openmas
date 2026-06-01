@@ -9,6 +9,7 @@ import {
   runConversationTurnNow,
 } from '../../src/os/conversations/multi-agent-conversation-manager.js';
 import { readConversationSession } from '../../src/conversations/read-conversation-session.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const CREATED_AT = '2026-05-14T11:00:00-05:00';
 const TURN1_ACTIVE_AT = '2026-05-14T11:01:00-05:00';
@@ -273,7 +274,7 @@ test('createMultiAgentConversation rejects unsafe secret-like conversation input
     () => createConversationFixture({
       projectRootPath,
       adapter,
-      initialTurn: 'Please use sk-or-v1-secretvalue1234567890 in this campaign room.',
+      initialTurn: `Please use ${buildFakeOpenRouterSecretProbe('secretvalue1234567890')} in this campaign room.`,
     }),
     /secret-like value/u,
   );

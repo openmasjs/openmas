@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   createLocalOpenMasOsRuntimeLoop,
   createOpenMasOsRuntimeLoopController,
@@ -356,7 +357,7 @@ test('runOpenMasOsRuntimeLoop records skipped ticks instead of overlapping slow 
 });
 
 test('runOpenMasOsRuntimeLoop records sanitized tick failures and can continue ticking', async () => {
-  const rawSecret = 'sk-or-v1-runtimeLoopSecret123456789';
+  const rawSecret = buildFakeOpenRouterSecretProbe('runtimeLoopSecret123456789');
   let tickCount = 0;
   const tickCalls = [];
 

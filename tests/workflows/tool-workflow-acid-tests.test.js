@@ -4,10 +4,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { runWorkflow } from '../../src/workflows/run-workflow.js';
+import { buildFakeGeminiSecretProbe } from '../helpers/fake-secret-probes.js';
 
-const FAKE_GEMINI_SECRET_VALUE = 'AIzaFAKE_TOOL_SECRET_SHOULD_NOT_LEAK_123';
+const FAKE_GEMINI_SECRET_VALUE = buildFakeGeminiSecretProbe('FAKE_TOOL_SECRET_SHOULD_NOT_LEAK_123');
 const FAKE_BEARER_SECRET_VALUE = 'Bearer fake-token-that-must-not-leak';
-const FAKE_FAILURE_SECRET_VALUE = 'AIzaFAKE_FAILURE_SECRET_SHOULD_NOT_LEAK_456';
+const FAKE_FAILURE_SECRET_VALUE = buildFakeGeminiSecretProbe('FAKE_FAILURE_SECRET_SHOULD_NOT_LEAK_456');
 
 async function createDirectoryTree(rootPath, relativePaths) {
   for (const relativePath of relativePaths) {
@@ -43,13 +44,13 @@ function buildBinding({
   resourceId,
   accessMode,
   bindingState = 'active',
-  secretReferenceId = null,
+  credentialReferenceId = null,
 }) {
   return {
     resourceId,
     accessMode,
     bindingState,
-    secretReferenceId,
+    credentialReferenceId,
   };
 }
 
@@ -494,7 +495,7 @@ test('TW acid: Juan cannot publish to a shared Meta resource without an explicit
   assert.doesNotMatch(JSON.stringify(result), /Juan denied executor must not load/u);
 });
 
-test('TW acid: a missing secret reference blocks provider-backed tool execution before the executor loads', async () => {
+test('TW acid: a missing credential reference blocks provider-backed tool execution before the executor loads', async () => {
   const toolDefinition = buildToolDefinition({
     toolId: 'provider.model.inspect',
     displayName: 'Provider Model Inspect',
@@ -529,7 +530,7 @@ test('TW acid: a missing secret reference blocks provider-backed tool execution 
       buildBinding({
         resourceId: 'openrouter-provider',
         accessMode: 'execute',
-        secretReferenceId: 'secret_openrouter_api_key',
+        credentialReferenceId: 'secret_openrouter_api_key',
       }),
     ],
     permissionRules: [
@@ -563,7 +564,7 @@ test('TW acid: a missing secret reference blocks provider-backed tool execution 
   assert.equal(readinessVerdict.status, 'unavailable');
   assert.equal(result.toolReadiness.summary.unavailable, 1);
   assert.match(readinessVerdict.reason, /required secrets are not resolved/u);
-  assert.match(readinessVerdict.missingRequirements[0].reason, /Secret Reference secret_openrouter_api_key is not resolved/u);
+  assert.match(readinessVerdict.missingRequirements[0].reason, /Credential Reference secret_openrouter_api_key is not resolved/u);
   assert.deepEqual(result.workflowRunState.toolRunIds, []);
   assert.equal(result.stepResults[0].toolResult, null);
   assert.doesNotMatch(JSON.stringify(result), /Provider executor must not load without secret resolution/u);

@@ -142,13 +142,13 @@ function buildResourceDefinition({
 function buildBinding({
   resourceId,
   accessMode,
-  secretReferenceId = null,
+  credentialReferenceId = null,
 }) {
   return {
     resourceId,
     accessMode,
     bindingState: 'active',
-    secretReferenceId,
+    credentialReferenceId,
   };
 }
 

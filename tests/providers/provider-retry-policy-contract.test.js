@@ -42,6 +42,7 @@ test('assertProviderRetryPolicy normalizes a provider-neutral retry policy', () 
       baseDelayMs: 200,
       maxDelayMs: 800,
     },
+    requestTimeoutMs: 2500,
     maxElapsedMs: 1500,
     allowFallbackProvider: false,
     appliesToRequestTypes: [
@@ -57,6 +58,7 @@ test('assertProviderRetryPolicy normalizes a provider-neutral retry policy', () 
   assert.equal(policy.backoffStrategy.kind, 'exponential');
   assert.equal(policy.backoffStrategy.baseDelayMs, 200);
   assert.equal(policy.backoffStrategy.maxDelayMs, 800);
+  assert.equal(policy.requestTimeoutMs, 2500);
   assert.equal(policy.maxElapsedMs, 1500);
   assert.equal(policy.allowFallbackProvider, false);
   assert.deepEqual(policy.appliesToRequestTypes, [

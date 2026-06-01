@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   OPENMAS_OS_SYSTEM_CALL_KINDS,
   OPENMAS_OS_SYSTEM_CALL_OPERATIONS,
@@ -288,7 +289,7 @@ test('assertOpenMasOsSystemCall rejects ambiguous timestamps, unsafe payloads, a
         requesterOperationalIdentityId: 'alfred',
         targetOperationalIdentityId: 'bruce',
         child: {
-          input: 'Use sk-or-v1-secretvalue1234567890 while inspecting.',
+          input: `Use ${buildFakeOpenRouterSecretProbe('secretvalue1234567890')} while inspecting.`,
         },
       },
     })),
@@ -303,7 +304,7 @@ test('assertOpenMasOsSystemCall rejects ambiguous timestamps, unsafe payloads, a
         child: {
           input: 'Inspect the MAS.',
         },
-        apiKey: 'sk-or-v1-secretvalue1234567890',
+        apiKey: buildFakeOpenRouterSecretProbe('secretvalue1234567890'),
       },
     })),
     /raw secret-like field/u,

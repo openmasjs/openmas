@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
 import { auditMemoryQuality } from '../../src/memory/audit-memory-quality.js';
 import { buildMemoryAuditReport } from '../../src/memory/build-memory-audit-report.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const VALID_CREATED_AT = '2026-04-14T00:00:00.000Z';
 const AUDIT_NOW = '2026-04-14T12:00:00.000Z';
@@ -120,7 +121,7 @@ test('auditMemoryQuality detects stale and expired active records', () => {
 });
 
 test('auditMemoryQuality detects possible secret patterns without copying the secret into findings', () => {
-  const rawSecret = 'sk-or-v1-THIS_IS_A_FAKE_SECRET_FOR_TESTING_ONLY';
+  const rawSecret = buildFakeOpenRouterSecretProbe('THIS_IS_A_FAKE_SECRET_FOR_TESTING_ONLY');
   const auditResult = auditMemoryQuality({
     now: AUDIT_NOW,
     memoryRecords: [

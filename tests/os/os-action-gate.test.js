@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   OPENMAS_OS_ACTION_KINDS,
   assertOpenMasOsActionResult,
@@ -98,7 +99,7 @@ test('evaluateOsActionRequest fails closed when the request is invalid without l
       actionType: 'restart_everything',
       payload: {
         targetOperationalIdentityId: 'bruce',
-        task: 'Use sk-or-v1-secretvalue1234567890 while inspecting.',
+        task: `Use ${buildFakeOpenRouterSecretProbe('secretvalue1234567890')} while inspecting.`,
       },
     }),
     ...createGateOptions(),
@@ -109,7 +110,7 @@ test('evaluateOsActionRequest fails closed when the request is invalid without l
   assert.equal(evaluation.actionRequest, null);
   assert.equal(evaluation.actionResult.actionType, 'invalid_request');
   assert.equal(evaluation.actionResult.payload.reasonCode, 'invalid_request');
-  assert.doesNotMatch(JSON.stringify(evaluation.actionResult), /sk-or-v1-secretvalue/u);
+  assert.doesNotMatch(JSON.stringify(evaluation.actionResult), new RegExp(buildFakeOpenRouterSecretProbe('secretvalue'), 'u'));
   assert.doesNotThrow(() => assertOpenMasOsActionResult(evaluation.actionResult));
 });
 

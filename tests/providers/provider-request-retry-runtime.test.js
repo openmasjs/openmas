@@ -5,23 +5,23 @@ import { executeProviderRequestWithRetry } from '../../src/providers/execute-pro
 function createPreparedProvider({
   providerId = 'openrouter-api',
   modelId = 'openrouter/free',
-  secretReferenceId = 'openrouter-api-key',
+  credentialReferenceId = 'openrouter-api-key',
 } = {}) {
   return {
     brainId: `${providerId}-primary`,
     providerId,
     modelId,
     resourceId: providerId,
-    secretReferenceId,
+    credentialReferenceId,
     secretResolutionStatus: 'resolved',
     status: 'ready',
     reason: 'Provider is ready for retry execution tests.',
   };
 }
 
-function createSecretResolution(secretReferenceId, secretValue) {
+function createSecretResolution(credentialReferenceId, secretValue) {
   return {
-    resolvedSecretReferences: [],
+    resolvedCredentialReferences: [],
     summary: {
       totalReferenced: 1,
       resolved: 1,
@@ -30,7 +30,7 @@ function createSecretResolution(secretReferenceId, secretValue) {
     },
     warnings: [],
     secretValueByReferenceId: new Map([
-      [secretReferenceId, secretValue],
+      [credentialReferenceId, secretValue],
     ]),
   };
 }
@@ -223,4 +223,60 @@ test('executeProviderRequestWithRetry does not retry non-retryable provider fail
   assert.equal(result.totalAttempts, 1);
   assert.equal(result.stoppedReason, 'failure_marked_non_retryable');
   assert.equal(result.finalProviderResponse.providerFailure.category, 'authentication_failed');
+});
+
+test('executeProviderRequestWithRetry aborts a provider attempt after its configured deadline', async () => {
+  let receivedAbortSignal = null;
+  let abortObserved = false;
+
+  const result = await executeProviderRequestWithRetry({
+    preparedProvider: createPreparedProvider(),
+    providerRequest: {
+      providerId: 'openrouter-api',
+      modelId: 'openrouter/free',
+      requestType: 'generate_text',
+      messages: [
+        {
+          role: 'user',
+          content: 'Wait forever unless the runtime cancels this request.',
+        },
+      ],
+    },
+    secretResolution: createSecretResolution('openrouter-api-key', 'openrouter-secret'),
+    retryPolicy: {
+      kind: 'provider_retry_policy',
+      version: 1,
+      maxAttempts: 1,
+      retryableFailureCategories: [
+        'timeout',
+      ],
+      backoffStrategy: {
+        kind: 'none',
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+      },
+      requestTimeoutMs: 20,
+      maxElapsedMs: 100,
+      allowFallbackProvider: false,
+      appliesToRequestTypes: [
+        'generate_text',
+      ],
+    },
+    executeProviderRequestImplementation: async ({ abortSignal }) => {
+      receivedAbortSignal = abortSignal;
+      abortSignal.addEventListener('abort', () => {
+        abortObserved = true;
+      }, { once: true });
+
+      return new Promise(() => {});
+    },
+  });
+
+  assert.equal(typeof receivedAbortSignal?.aborted, 'boolean');
+  assert.equal(typeof receivedAbortSignal?.addEventListener, 'function');
+  assert.equal(abortObserved, true);
+  assert.equal(result.totalAttempts, 1);
+  assert.equal(result.finalProviderResponse.status, 'failed');
+  assert.equal(result.finalProviderResponse.providerFailure.category, 'timeout');
+  assert.match(result.finalProviderResponse.errorMessage, /timed out after 20 ms/u);
 });

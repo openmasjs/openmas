@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   OPENMAS_OS_RESULT_RECORD_KINDS,
   OPENMAS_OS_RESULT_RECORD_RESULT_KINDS,
@@ -245,7 +246,7 @@ test('assertOpenMasOsResultRecord rejects unsupported states, unsafe ids, and un
   assert.throws(
     () => assertOpenMasOsResultRecord(createResultRecord({
       metadata: {
-        apiKey: 'sk-or-v1-secretvalue',
+        apiKey: buildFakeOpenRouterSecretProbe('secretvalue'),
       },
     })),
     /raw secret-like field/u,

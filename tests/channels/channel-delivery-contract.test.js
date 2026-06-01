@@ -7,6 +7,7 @@ import {
   isChannelDeliveryTerminal,
 } from '../../src/contracts/channel-delivery-state-contract.js';
 import { createChannelDeliveryRequest } from '../../src/channels/create-channel-delivery-request.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const VALID_REQUESTED_AT = '2026-04-17T10:00:00.000Z';
 
@@ -133,7 +134,7 @@ test('createChannelDeliveryRequest blocks inactive channel resources without ada
 });
 
 test('channel delivery state stores only a safe summary, never raw message body or secret-looking values', () => {
-  const secretProbe = 'sk-or-v1-test-secret-that-must-not-be-in-state';
+  const secretProbe = buildFakeOpenRouterSecretProbe('test-secret-that-must-not-be-in-state');
   const messageRequest = buildMessageRequest({
     content: {
       contentType: 'text',

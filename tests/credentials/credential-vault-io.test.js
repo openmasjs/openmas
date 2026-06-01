@@ -6,6 +6,7 @@ import { mkdtemp, mkdir, writeFile, readFile } from 'node:fs/promises';
 import { generateMasterKey } from '../../src/credentials/generate-master-key.js';
 import { openCredentialVault } from '../../src/credentials/open-credential-vault.js';
 import { writeCredentialVault } from '../../src/credentials/write-credential-vault.js';
+import { buildFakeAnthropicSecretProbe, buildFakeGeminiSecretProbe, buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 async function createTempProjectRoot() {
   return mkdtemp(path.join(os.tmpdir(), 'openmas-vault-io-'));
@@ -50,8 +51,8 @@ test('write then open returns the original credentials object', async () => {
   await setupMasterKey(projectRootPath, masterKeyHex);
 
   const credentials = {
-    'openrouter-api-key': 'sk-or-v1-abc123',
-    'gemini-api-key': 'AIzaSy123',
+    'openrouter-api-key': buildFakeOpenRouterSecretProbe('abc123'),
+    'gemini-api-key': buildFakeGeminiSecretProbe('Sy123'),
   };
 
   await withEnvironment({ OPENMAS_MASTER_KEY: null }, async () => {
@@ -117,11 +118,11 @@ test('write then open preserves all key-value pairs', async () => {
   await setupMasterKey(projectRootPath, masterKeyHex);
 
   const credentials = {
-    'openrouter-api-key': 'sk-or-v1-abc123def456',
-    'gemini-api-key': 'AIzaSyA1B2C3D4E5F6',
+    'openrouter-api-key': buildFakeOpenRouterSecretProbe('abc123def456'),
+    'gemini-api-key': buildFakeGeminiSecretProbe('SyA1B2C3D4E5F6'),
     'ollama-api-key': 'ollama-cloud-key-xyz',
     'chatgpt-api-key': 'sk-proj-abc123',
-    'claude-api-key': 'sk-ant-api03-abc123',
+    'claude-api-key': buildFakeAnthropicSecretProbe('api03-abc123'),
     'alfred-whatsapp-token': 'EAABsbCS1IDBAO',
     'maria-instagram-token': 'IGQVJWZArV2',
   };

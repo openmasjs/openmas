@@ -26,7 +26,7 @@ const MARIA_HUMAN_PREFERENCE_MARKER = 'MARIA_HUMAN_PREFERENCE_MARKER_HIGHER_PRIO
 const RUNTIME_NOISE_MARKER = 'RUNTIME_NOISE_MARKER_MUST_NOT_CROWD_OUT_IDENTITY_MEMORY';
 const ARTIFACT_NOISE_MARKER = 'ARTIFACT_NOISE_MARKER_MUST_NOT_CROWD_OUT_IDENTITY_MEMORY';
 const RESTRICTED_MEMORY_MARKER = 'RESTRICTED_MEMORY_MARKER_MUST_NOT_REACH_PROVIDER_PROMPT';
-const SECRET_REFERENCE_MEMORY_MARKER = 'SECRET_REFERENCE_MEMORY_MARKER_MUST_NOT_REACH_PROVIDER_PROMPT';
+const CREDENTIAL_REFERENCE_MEMORY_MARKER = 'CREDENTIAL_REFERENCE_MEMORY_MARKER_MUST_NOT_REACH_PROVIDER_PROMPT';
 
 async function createDirectoryTree(rootPath, relativePaths) {
   for (const relativePath of relativePaths) {
@@ -52,23 +52,23 @@ async function writePortableCognitiveIdentity({ projectRootPath, relativeCogniti
   await writeFile(path.join(cognitiveIdentityRootPath, 'capabilities.md'), '# Capabilities\n\n- Use role-specific context carefully.', 'utf8');
 }
 
-function createSecretReferenceRegistryContent() {
+function createCredentialReferenceRegistryContent() {
   return {
-    kind: 'secret_reference_registry',
+    kind: 'credential_reference_registry',
     version: 1,
-    secretReferences: [
+    credentialReferences: [
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'openrouter-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'openrouter-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
       {
-        kind: 'secret_reference_definition',
+        kind: 'credential_reference_definition',
         version: 1,
-        secretReferenceId: 'gemini-api-key',
-        secretType: 'api_key',
+        credentialReferenceId: 'gemini-api-key',
+        credentialType: 'api_key',
         valueShape: 'string',
       },
     ],
@@ -132,13 +132,13 @@ function createBindingsContent(operationalIdentityId) {
         resourceId: 'openrouter-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'openrouter-api-key',
+        credentialReferenceId: 'openrouter-api-key',
       },
       {
         resourceId: 'gemini-api',
         accessMode: 'execute',
         bindingState: 'active',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
       },
     ],
   };
@@ -494,8 +494,8 @@ async function createProjectFixture() {
     createResourcesRegistryContent(),
   );
   await writeJsonFile(
-    path.join(projectRootPath, 'config', 'secret-references.json'),
-    createSecretReferenceRegistryContent(),
+    path.join(projectRootPath, 'config', 'credential-references.json'),
+    createCredentialReferenceRegistryContent(),
   );
   await writeDevelopmentCredentialVault(projectRootPath);
 
@@ -973,7 +973,7 @@ test('Identity and MAS memory keep priority over noisy runtime state and artifac
   );
 });
 
-test('Restricted and secret-reference-only memory are rejected before probabilistic provider prompts', async () => {
+test('Restricted and credential-reference-only memory are rejected before probabilistic provider prompts', async () => {
   await withEnvironment(
     {
       "openrouter-api-key": 'openrouter-secret',
@@ -995,7 +995,7 @@ test('Restricted and secret-reference-only memory are rejected before probabilis
         projectRootPath,
         memoryRecord: createDurableMemoryRecord({
           memoryRecordId: 'mem_secret_reference_memory_rejection_probe',
-          summary: `${SECRET_REFERENCE_MEMORY_MARKER}: secret-reference-only memory metadata should not enter probabilistic prompts.`,
+          summary: `${CREDENTIAL_REFERENCE_MEMORY_MARKER}: credential-reference-only memory metadata should not enter probabilistic prompts.`,
           content: null,
           sensitivityLevel: 'secret_reference_only',
         }),
@@ -1004,16 +1004,16 @@ test('Restricted and secret-reference-only memory are rejected before probabilis
       const mariaInvocation = await invokeOperationalIdentityWithPromptCapture({
         projectRootPath,
         operationalIdentityId: 'maria',
-        inputText: 'Confirm restricted and secret-reference memory handling.',
+        inputText: 'Confirm restricted and credential-reference memory handling.',
       });
 
       assert.equal(mariaInvocation.result.status, 'completed');
       assertExcludesAll(mariaInvocation.providerSystemMessage, [
         RESTRICTED_MEMORY_MARKER,
-        SECRET_REFERENCE_MEMORY_MARKER,
+        CREDENTIAL_REFERENCE_MEMORY_MARKER,
       ]);
       assert.match(mariaInvocation.providerSystemMessage, /restricted and is not a runtime reference/u);
-      assert.match(mariaInvocation.providerSystemMessage, /secret-reference-only and cannot enter a context pack/u);
+      assert.match(mariaInvocation.providerSystemMessage, /credential-reference-only and cannot enter a context pack/u);
 
       const contextLayer = findContextPackLayer(mariaInvocation.invocationSession);
 
@@ -1026,7 +1026,7 @@ test('Restricted and secret-reference-only memory are rejected before probabilis
         sourceId: 'mem_secret_reference_memory_rejection_probe',
       }), false);
       assert.doesNotMatch(JSON.stringify(mariaInvocation.invocationSession), new RegExp(RESTRICTED_MEMORY_MARKER, 'u'));
-      assert.doesNotMatch(JSON.stringify(mariaInvocation.invocationSession), new RegExp(SECRET_REFERENCE_MEMORY_MARKER, 'u'));
+      assert.doesNotMatch(JSON.stringify(mariaInvocation.invocationSession), new RegExp(CREDENTIAL_REFERENCE_MEMORY_MARKER, 'u'));
     },
   );
 });

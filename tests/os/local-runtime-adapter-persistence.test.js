@@ -18,6 +18,7 @@ import {
   createLocalRuntimeAdapter,
 } from '../../src/os/adapters/local-runtime-adapter.js';
 import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const NOW = '2026-05-14T10:00:00-05:00';
 
@@ -82,7 +83,7 @@ function createProcess(overrides = {}) {
     conversationId: 'alfred-admin',
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [
+    credentialReferenceIds: [
       'providers.openrouter.shared.default.api_key',
     ],
     pendingApprovalRefs: [],
@@ -272,6 +273,31 @@ test('LocalRuntimeAdapter persists and loads Job, Process, and Thread snapshots'
   await assertFileExists(path.join(projectRootPath, 'instance', 'os', 'jobs', `${job.jobId}.json`));
   await assertFileExists(path.join(projectRootPath, 'instance', 'os', 'processes', `${processState.processId}.json`));
   await assertFileExists(path.join(projectRootPath, 'instance', 'os', 'threads', `${thread.threadId}.json`));
+});
+
+test('LocalRuntimeAdapter retries a briefly missing mutable snapshot before reporting not found', async () => {
+  const projectRootPath = await createTemporaryProjectRoot();
+  const adapter = createLocalRuntimeAdapter({ projectRootPath });
+  const thread = createThread({
+    threadId: 'thread_transient_publication_gap',
+  });
+
+  await adapter.initialize();
+
+  const delayedPublication = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      adapter.persistThread(thread).then(resolve, reject);
+    }, 15);
+  });
+  const [
+    loadedThread,
+    persistedThread,
+  ] = await Promise.all([
+    adapter.loadThread(thread.threadId),
+    delayedPublication,
+  ]);
+
+  assert.deepEqual(loadedThread, persistedThread);
 });
 
 test('LocalRuntimeAdapter claims a ready Job atomically across concurrent callers', async () => {
@@ -691,7 +717,7 @@ test('LocalRuntimeAdapter rejects raw secrets in snapshots, events, and timers',
     () => adapter.persistJob(createJob({
       inputRef: {
         type: 'inline_text',
-        text: 'Use sk-or-v1-secretvalue in this runtime state.',
+        text: `Use ${buildFakeOpenRouterSecretProbe('secretvalue')} in this runtime state.`,
       },
     })),
     /secret-like value/u,
@@ -709,7 +735,7 @@ test('LocalRuntimeAdapter rejects raw secrets in snapshots, events, and timers',
   await assert.rejects(
     () => adapter.persistTimer(createTimer({
       payload: {
-        apiKey: 'sk-or-v1-secretvalue',
+        apiKey: buildFakeOpenRouterSecretProbe('secretvalue'),
       },
     })),
     /raw secret-like field/u,
@@ -719,7 +745,7 @@ test('LocalRuntimeAdapter rejects raw secrets in snapshots, events, and timers',
     () => adapter.persistConversationRun(createConversationRun({
       contextRefs: [
         {
-          apiKey: 'sk-or-v1-secretvalue',
+          apiKey: buildFakeOpenRouterSecretProbe('secretvalue'),
         },
       ],
     })),

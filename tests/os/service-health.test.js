@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   access,
   mkdtemp,
@@ -262,7 +263,7 @@ test('service health files reject raw secret-like state', async () => {
         ...state,
         lastError: {
           name: 'ProviderError',
-          message: 'Provider rejected sk-or-v1-secretvalue123456789',
+          message: `Provider rejected ${buildFakeOpenRouterSecretProbe('secretvalue123456789')}`,
         },
       },
     }),
@@ -274,7 +275,7 @@ test('service health files reject raw secret-like state', async () => {
       projectRootPath,
       heartbeat: {
         ...buildServiceHeartbeat({ state }),
-        apiKey: 'sk-or-v1-secretvalue123456789',
+        apiKey: buildFakeOpenRouterSecretProbe('secretvalue123456789'),
       },
     }),
     /raw secret-like field/u,

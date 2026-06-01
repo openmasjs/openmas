@@ -12,27 +12,27 @@ import { executeProviderRequest } from '../../src/providers/execute-provider-req
 function createPreparedProvider({
   providerId,
   modelId,
-  secretReferenceId,
+  credentialReferenceId,
 }) {
   return {
     brainId: `${providerId}-primary`,
     providerId,
     modelId,
     resourceId: providerId,
-    secretReferenceId,
+    credentialReferenceId,
     secretResolutionStatus: 'resolved',
     status: 'ready',
     reason: 'Provider is ready for execution.',
   };
 }
 
-function createSecretResolution(secretReferenceId, secretValue) {
+function createSecretResolution(credentialReferenceId, secretValue) {
   return {
-    resolvedSecretReferences: [
+    resolvedCredentialReferences: [
       {
         resourceId: 'provider-resource',
-        secretReferenceId,
-        secretType: 'api_key',
+        credentialReferenceId,
+        credentialType: 'api_key',
         resolutionStatus: 'resolved',
         reason: 'resolved',
         hasSecretValue: true,
@@ -46,7 +46,7 @@ function createSecretResolution(secretReferenceId, secretValue) {
     },
     warnings: [],
     secretValueByReferenceId: new Map([
-      [secretReferenceId, secretValue],
+      [credentialReferenceId, secretValue],
     ]),
   };
 }
@@ -129,11 +129,12 @@ test('resolveProviderAdapter rejects unsupported providers clearly', () => {
 });
 
 test('executeProviderRequest calls the OpenRouter adapter through mocked fetch', async () => {
+  const abortController = new AbortController();
   const providerResponse = await executeProviderRequest({
     preparedProvider: createPreparedProvider({
       providerId: 'openrouter-api',
       modelId: 'openai/gpt-5.4-mini',
-      secretReferenceId: 'openrouter-api-key',
+      credentialReferenceId: 'openrouter-api-key',
     }),
     providerRequest: {
       providerId: 'openrouter-api',
@@ -153,10 +154,12 @@ test('executeProviderRequest calls the OpenRouter adapter through mocked fetch',
       maxOutputTokens: 64,
     },
     secretResolution: createSecretResolution('openrouter-api-key', 'openrouter-secret'),
+    abortSignal: abortController.signal,
     fetchImplementation: async (url, options) => {
       assert.equal(url, 'https://openrouter.ai/api/v1/chat/completions');
       assert.equal(options.method, 'POST');
       assert.equal(options.headers.Authorization, 'Bearer openrouter-secret');
+      assert.equal(options.signal, abortController.signal);
 
       const body = JSON.parse(options.body);
       assert.equal(body.model, 'openai/gpt-5.4-mini');
@@ -196,7 +199,7 @@ test('executeProviderRequest maps OpenRouter authentication failures to provider
     preparedProvider: createPreparedProvider({
       providerId: 'openrouter-api',
       modelId: 'openrouter/free',
-      secretReferenceId: 'openrouter-api-key',
+      credentialReferenceId: 'openrouter-api-key',
     }),
     providerRequest: {
       providerId: 'openrouter-api',
@@ -238,7 +241,7 @@ test('executeProviderRequest calls the Gemini adapter through mocked fetch', asy
     preparedProvider: createPreparedProvider({
       providerId: 'gemini-api',
       modelId: 'gemini-2.5-flash',
-      secretReferenceId: 'gemini-api-key',
+      credentialReferenceId: 'gemini-api-key',
     }),
     providerRequest: {
       providerId: 'gemini-api',
@@ -305,7 +308,7 @@ test('executeProviderRequest maps Gemini high-demand failures to provider taxono
     preparedProvider: createPreparedProvider({
       providerId: 'gemini-api',
       modelId: 'gemini-flash-latest',
-      secretReferenceId: 'gemini-api-key',
+      credentialReferenceId: 'gemini-api-key',
     }),
     providerRequest: {
       providerId: 'gemini-api',
@@ -348,7 +351,7 @@ test('executeProviderRequest calls the Ollama adapter through mocked fetch', asy
     preparedProvider: createPreparedProvider({
       providerId: 'ollama-api',
       modelId: 'nemotron-3-super:cloud',
-      secretReferenceId: 'ollama-api-key',
+      credentialReferenceId: 'ollama-api-key',
     }),
     providerRequest: {
       providerId: 'ollama-api',
@@ -417,7 +420,7 @@ test('executeProviderRequest maps Ollama empty output failures to provider taxon
     preparedProvider: createPreparedProvider({
       providerId: 'ollama-api',
       modelId: 'nemotron-3-super:cloud',
-      secretReferenceId: 'ollama-api-key',
+      credentialReferenceId: 'ollama-api-key',
     }),
     providerRequest: {
       providerId: 'ollama-api',
@@ -464,7 +467,7 @@ test('executeProviderRequest fails clearly when the prepared provider is not rea
         providerId: 'gemini-api',
         modelId: 'gemini-2.5-flash',
         resourceId: 'gemini-api',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
         secretResolutionStatus: 'unresolved',
         status: 'not_ready',
         reason: 'Secret is missing.',

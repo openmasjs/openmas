@@ -191,7 +191,7 @@ test('buildContextPackForInvocation builds invocation summary and non-secret res
           accessMode: 'execute',
           ownershipScope: 'shared',
           resourceLifecycleState: 'active',
-          secretReferenceId: 'gemini-api-key',
+          credentialReferenceId: 'gemini-api-key',
         },
       ],
     }),

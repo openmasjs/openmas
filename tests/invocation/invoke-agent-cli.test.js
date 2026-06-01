@@ -8,6 +8,8 @@ import {
   printInvocationSummary,
   runOsManagedCliInvocation,
 } from '../../bin/invoke-agent.js';
+import { OPENMAS_OS_SYSTEM_CALL_KINDS } from '../../src/contracts/openmas-os-system-call-contract.js';
+import { createLocalSystemCallInbox } from '../../src/os/system-calls/local-system-call-inbox.js';
 
 function createProbabilisticOptions(projectRootPath) {
   return parseCommandLineArguments([
@@ -102,15 +104,54 @@ test('invoke-agent CLI rejects different create and resume conversation names cl
   );
 });
 
-test('invoke-agent CLI rejects direct Cognitive Identity execution through --agent', () => {
+test('invoke-agent CLI accepts --agent as an Operational Identity alias', () => {
+  const options = parseCommandLineArguments([
+    '--agent',
+    'alfred',
+    '--command',
+    'hello',
+  ]);
+
+  assert.equal(options.operationalIdentityId, 'alfred');
+  assert.equal(Object.hasOwn(options, 'agentId'), false);
+});
+
+test('invoke-agent CLI accepts --agent=value as an Operational Identity alias', () => {
+  const options = parseCommandLineArguments([
+    '--agent=bruce',
+    '--command',
+    'hello',
+  ]);
+
+  assert.equal(options.operationalIdentityId, 'bruce');
+  assert.equal(Object.hasOwn(options, 'agentId'), false);
+});
+
+test('invoke-agent CLI rejects conflicting Operational Identity aliases', () => {
   assert.throws(
     () => parseCommandLineArguments([
       '--agent',
-      'system-steward',
+      'alfred',
+      '--operational-identity',
+      'bruce',
       '--command',
       'hello',
     ]),
-    /Direct Cognitive Identity execution is not supported/u,
+    /must reference the same Operational Identity/u,
+  );
+});
+
+test('invoke-agent CLI no longer accepts the old legacy intent compatibility switch', () => {
+  assert.throws(
+    () => parseCommandLineArguments([
+      '--agent',
+      'alfred',
+      '--legacy-intent-compatibility',
+      'compatibility',
+      '--command',
+      'hello',
+    ]),
+    /Unsupported argument: --legacy-intent-compatibility/u,
   );
 });
 
@@ -241,4 +282,73 @@ test('OS-managed invoke-agent exposes scheduled submission as scheduled without 
   assert.match(output, /Primary Cognitive Identity: system-steward/u);
   assert.match(output, /OS Runtime Truth: scheduled \(waiting_for_due_execution\)/u);
   assert.match(output, /scheduled child has not completed yet/u);
+});
+
+test('OS-managed invoke-agent prefers durable scheduled System Call truth over a stale invocation preview', async () => {
+  const projectRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-invoke-agent-cli-'));
+  const systemCallId = 'syscall_schedule_delegation_cli_durable_truth_001';
+  const inbox = createLocalSystemCallInbox({ projectRootPath });
+  const result = await runOsManagedCliInvocation(createProbabilisticOptions(projectRootPath), {
+    invocationRunner: async () => {
+      await inbox.persistSystemCallResult({
+        kind: OPENMAS_OS_SYSTEM_CALL_KINDS.result,
+        schemaVersion: 1,
+        systemCallId,
+        operation: 'schedule_delegation',
+        status: 'completed',
+        processedAt: '2026-05-31T10:00:00-05:00',
+        processedBy: {
+          serviceId: 'openmas_os_service_cli_truth_test',
+          tickId: 'os_service_tick_cli_truth_test',
+        },
+        decision: {
+          allowed: true,
+          reason: 'Scheduled delegation accepted for durable-truth CLI regression.',
+        },
+        effects: {
+          createdJobIds: ['job_syscall_schedule_delegation_cli_durable_truth_001'],
+          createdTimerIds: ['timer_job_syscall_schedule_delegation_cli_durable_truth_001'],
+          createdSignalIds: [],
+          createdProcessIds: [],
+          createdThreadIds: [],
+          eventIds: [],
+        },
+        summary: 'OpenMAS OS scheduled a delegated child Job.',
+        correlation: {
+          invocationId: 'invocation_cli_runtime_truth_stub',
+        },
+        evidenceRefs: [],
+        warnings: [],
+        details: {
+          childJobId: 'job_syscall_schedule_delegation_cli_durable_truth_001',
+          timerId: 'timer_job_syscall_schedule_delegation_cli_durable_truth_001',
+        },
+      });
+
+      return createStubInvocationResult({
+        message: 'Stale scheduling preview returned.',
+        output: {
+          brainToolExecution: {
+            executionPerformed: true,
+            requestedToolId: 'mas.os.schedule_delegation',
+            toolResultStatus: 'succeeded',
+            observation: {
+              dataPreview: {
+                scheduled: false,
+                systemCall: {
+                  systemCallId,
+                  operation: 'schedule_delegation',
+                  status: 'pending',
+                },
+              },
+            },
+          },
+        },
+      });
+    },
+  });
+
+  assert.equal(result.osExecution.latestSystemCallResult.status, 'completed');
+  assert.equal(result.osExecution.runtimeTruth.status, 'scheduled');
+  assert.equal(result.osExecution.runtimeTruth.phase, 'waiting_for_due_execution');
 });

@@ -224,7 +224,7 @@ function buildReadyToolVerdict() {
         resourceId: 'mas-filesystem',
         resourceType: 'storage',
         accessMode: 'read',
-        secretReferenceId: null,
+        credentialReferenceId: null,
         secretResolutionStatus: null,
       },
     ],

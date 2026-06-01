@@ -13,6 +13,7 @@ import {
 import { releaseDueOneShotJobs } from '../../src/os/scheduler/one-shot-scheduled-jobs.js';
 import { executeMasOsScheduleDelegation } from '../../src/os/actions/mas-os-schedule-delegation-runtime.js';
 import { createLocalSystemCallInbox } from '../../src/os/system-calls/local-system-call-inbox.js';
+import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 
 const CREATED_AT = '2026-05-15T09:00:00-05:00';
 const SCHEDULED_AT = '2026-05-15T09:05:00-05:00';
@@ -90,7 +91,7 @@ function createParentProcess(overrides = {}) {
     conversationId: 'os-m2-local-service-smoke',
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: CREATED_AT,
@@ -661,6 +662,56 @@ test('runOpenMasOsServiceTick does not recover blocked parent delegation waits a
   assert.equal((await adapter.loadThread('thread_cli_blocked_parent_alfred')).status, 'blocked');
 });
 
+test('runOpenMasOsServiceTick terminalizes historical foreground resource waits without a supported wake path', async () => {
+  const {
+    projectRootPath,
+    adapter,
+  } = await createEmptyProjectFixture();
+
+  await adapter.persistJob(createParentJob({
+    jobId: 'job_cli_unsupported_resource_wait',
+    projectId: 'project_openmas_cli',
+    createdBy: {
+      type: 'human',
+      id: 'cli',
+    },
+    trigger: {
+      type: 'immediate',
+    },
+  }));
+  await adapter.persistProcess(createParentProcess({
+    processId: 'process_cli_unsupported_resource_wait',
+    jobId: 'job_cli_unsupported_resource_wait',
+    status: 'blocked',
+    currentThreadId: 'thread_cli_unsupported_resource_wait',
+  }));
+  await adapter.persistThread(createParentThread({
+    threadId: 'thread_cli_unsupported_resource_wait',
+    processId: 'process_cli_unsupported_resource_wait',
+    jobId: 'job_cli_unsupported_resource_wait',
+    status: 'blocked',
+    waitReason: 'waiting_for_resource',
+  }));
+
+  const result = await runOpenMasOsServiceTick({
+    adapter,
+    projectRootPath,
+    now: () => RUN_AT,
+  });
+  const failedJob = await adapter.loadJob('job_cli_unsupported_resource_wait');
+  const failedProcess = await adapter.loadProcess('process_cli_unsupported_resource_wait');
+  const failedThread = await adapter.loadThread('thread_cli_unsupported_resource_wait');
+
+  assert.equal(result.status, 'completed');
+  assert.equal(result.unsupportedResourceWaitReconciliation.terminalizedCount, 1);
+  assert.equal(failedJob.status, 'failed');
+  assert.equal(failedProcess.status, 'failed');
+  assert.equal(failedProcess.currentThreadId, null);
+  assert.equal(failedThread.status, 'failed');
+  assert.equal(failedThread.waitReason, null);
+  assert.equal(failedThread.failureSummary.reasonCode, 'unsupported_foreground_resource_wait');
+});
+
 test('runOpenMasOsServiceTick recovers an abandoned delegated child and resumes its blocked parent from failed evidence', async () => {
   const {
     projectRootPath,
@@ -1087,7 +1138,7 @@ test('runOpenMasOsServiceTick keeps dispatching work when the System Call Proces
     projectRootPath,
     adapter,
   } = await createEmptyProjectFixture();
-  const rawSecret = 'sk-or-v1-systemCallProcessorSecret123456789';
+  const rawSecret = buildFakeOpenRouterSecretProbe('systemCallProcessorSecret123456789');
 
   await adapter.persistJob(createReadyJob());
 
@@ -1239,7 +1290,7 @@ test('runOpenMasOsServiceTick persists due scheduled delegation failures without
     timerId,
     projectRootPath,
   } = await createScheduledDelegationFixture();
-  const rawSecret = 'sk-or-v1-serviceTickSecret123456789';
+  const rawSecret = buildFakeOpenRouterSecretProbe('serviceTickSecret123456789');
   const result = await runOpenMasOsServiceTick({
     adapter,
     projectRootPath,
@@ -1793,7 +1844,7 @@ test('runOpenMasOsServiceTick reports asynchronous worker failures on a later ti
   const executor = createLocalAsyncDispatchExecutor({
     maxConcurrentExecutions: 1,
   });
-  const rawSecret = 'sk-or-v1-asyncWorkerSecret123456789';
+  const rawSecret = buildFakeOpenRouterSecretProbe('asyncWorkerSecret123456789');
 
   await adapter.persistJob(createReadyJob({
     jobId: 'job_async_failure_redaction',

@@ -20,7 +20,7 @@ function buildResolvedBindings() {
       resourceId: 'mas-filesystem',
       accessMode: 'read',
       bindingState: 'active',
-      secretReferenceId: null,
+      credentialReferenceId: null,
       resourceType: 'storage',
       resourceDisplayName: 'MAS Filesystem',
       ownershipScope: 'shared',

@@ -523,7 +523,7 @@ test('PR acid: final answer provider failure produces clear operator guidance', 
       assert.equal(result.output.fallbackDecisionTrace.fallbackFailureCategory, 'rate_limited');
       assert.match(result.nextStep, /primary provider openrouter-api failed \(transient_unavailable\)/u);
       assert.match(result.nextStep, /fallback provider gemini-api also failed \(rate_limited\)/u);
-      assert.match(result.nextStep, /provider health, secret references, and persisted invocation evidence/u);
+      assert.match(result.nextStep, /provider health, credential references, and persisted invocation evidence/u);
       assert.equal(invocationSession.fallbackDecisionTrace.status, 'fallback_failed');
       assert.equal(invocationSession.fallbackDecisionTrace.fallbackFailureCategory, 'rate_limited');
     },

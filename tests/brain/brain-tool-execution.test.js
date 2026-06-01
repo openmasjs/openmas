@@ -4,8 +4,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { executeAcceptedBrainToolRequest } from '../../src/tools/execute-accepted-brain-tool-request.js';
+import { buildFakeGeminiSecretProbe } from '../helpers/fake-secret-probes.js';
 
-const FAKE_SECRET_VALUE = 'AIzaFAKE_BRAIN_TOOL_EXECUTION_SECRET_SHOULD_NOT_LEAK';
+const FAKE_SECRET_VALUE = buildFakeGeminiSecretProbe('FAKE_BRAIN_TOOL_EXECUTION_SECRET_SHOULD_NOT_LEAK');
 
 async function createTemporaryMasRoot() {
   const temporaryRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-brain-tool-execution-'));
@@ -88,7 +89,7 @@ function buildReadyVerdict(overrides = {}) {
         resourceId: 'mas-filesystem',
         resourceType: 'storage',
         accessMode: 'read',
-        secretReferenceId: null,
+        credentialReferenceId: null,
         secretResolutionStatus: null,
       },
     ],
@@ -188,7 +189,7 @@ function buildApprovalRequiredResolution() {
           resourceId: 'meta-channel',
           resourceType: 'channel',
           accessMode: 'publish',
-          secretReferenceId: null,
+          credentialReferenceId: null,
           secretResolutionStatus: null,
         },
       ],

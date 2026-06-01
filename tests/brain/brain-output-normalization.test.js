@@ -195,6 +195,35 @@ test('normalizeProviderResponseToBrainOutput removes common HTML-ish terminal ar
   assert.doesNotMatch(brainOutput.outputText, /<br>|&nbsp;|&lt;br&gt;/u);
 });
 
+test('normalizeProviderResponseToBrainOutput strips trailing provider control markers without rewriting legitimate inner text', () => {
+  const brainOutput = normalizeProviderResponseToBrainOutput({
+    providerResponse: {
+      kind: 'provider_response',
+      providerId: 'openrouter-api',
+      modelId: 'openrouter/free',
+      requestType: 'generate_text',
+      status: 'completed',
+      outputText: [
+        'A literal <assistant> example inside explanatory text remains visible.',
+        '</assistant>',
+        '<|im_end|>',
+      ].join('\n'),
+      finishReason: 'stop',
+      providerResponseId: 'provider-response-control-markers-1',
+      usage: null,
+      warnings: [],
+      errorCode: null,
+      errorMessage: null,
+    },
+  });
+
+  assert.equal(
+    brainOutput.outputText,
+    'A literal <assistant> example inside explanatory text remains visible.',
+  );
+  assert.doesNotMatch(brainOutput.outputText, /<\/assistant>|<\|im_end\|>/u);
+});
+
 test('normalizeProviderResponseToBrainOutput strips hidden action claim report envelopes from visible output text', () => {
   const brainOutput = normalizeProviderResponseToBrainOutput({
     providerResponse: {

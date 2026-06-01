@@ -4,6 +4,11 @@ import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { runAgentInvocation } from '../../src/invocation/run-agent-invocation.js';
 import { buildActionClaimReportEnvelope } from '../../src/actions/action-claim-report-envelope.js';
+import { buildFakeGeminiSecretProbe } from '../helpers/fake-secret-probes.js';
+import {
+  buildSemanticClassifiedIntentFromCandidate,
+  buildSemanticClassifierCandidateFromAffordance,
+} from '../../src/actions/classify-action-intent-for-invocation.js';
 import {
   createAlfredProbabilisticProjectFixture,
   withEnvironment,
@@ -37,6 +42,52 @@ function buildBrainToolRequestEnvelope({
     input,
     purpose,
     expectedSideEffectLevel,
+  };
+}
+
+function buildSemanticAdapterForTarget({
+  targetType,
+  targetId,
+  candidateId,
+  intentId,
+  intentType,
+  reason,
+  runtimeInput = {},
+  matchedSignals = [targetId],
+}) {
+  return async (classifierRequest) => {
+    const affordance = classifierRequest.actionAffordances.find((candidateAffordance) => {
+      return candidateAffordance.targetType === targetType
+        && candidateAffordance.targetId === targetId;
+    });
+
+    assert.ok(affordance, `Expected semantic affordance ${targetType}:${targetId} to be available.`);
+
+    const candidate = buildSemanticClassifierCandidateFromAffordance({
+      affordance,
+      candidateId,
+      confidence: 'high',
+      confidenceScore: 0.95,
+      reason,
+      matchedSignals,
+      metadata: {
+        runtimeInput,
+      },
+    });
+
+    return buildSemanticClassifiedIntentFromCandidate({
+      request: classifierRequest.request,
+      candidate,
+      intentId,
+      intentType,
+      confidence: 'high',
+      confidenceScore: 0.95,
+      normalizedGoal: reason,
+      reason,
+      evidence: [
+        'Test semantic adapter selected a known OpenMAS action affordance.',
+      ],
+    });
   };
 }
 
@@ -145,13 +196,13 @@ function buildResourceDefinition({
 function buildBinding({
   resourceId,
   accessMode,
-  secretReferenceId = null,
+  credentialReferenceId = null,
 }) {
   return {
     resourceId,
     accessMode,
     bindingState: 'active',
-    secretReferenceId,
+    credentialReferenceId,
   };
 }
 
@@ -457,6 +508,42 @@ async function addMasHealthReviewWorkflow({
     memoryPolicy: {
       allowWritebackCandidates,
     },
+    intentMetadata: {
+      kind: 'action_intent_metadata',
+      version: 1,
+      primaryIntentId: 'admin.mas.health_review',
+      targetActionType: 'workflow_execution',
+      targetType: 'workflow',
+      targetId: 'mas-health-review',
+      expectedSideEffectLevel: 'read_only',
+      requestTypes: [
+        'diagnostic',
+        'workflow_action',
+      ],
+      semanticTags: [
+        'mas',
+        'health',
+        'review',
+        'workflow',
+      ],
+      whenToUse: [
+        'The user asks for a deeper MAS health review.',
+      ],
+      whenNotToUse: [
+        'The user only asks for a quick inventory snapshot.',
+      ],
+      exampleRequests: [
+        'Please run a full MAS health review before answering.',
+      ],
+      confidenceGuidance: {
+        high: 'The request explicitly asks for a MAS health review workflow.',
+        medium: 'The request asks for MAS health but does not clearly request workflow execution.',
+        low: 'The request only mentions MAS status generally.',
+      },
+      ambiguityGuidance: [
+        'Ask whether the user wants a full workflow when the request is only informational.',
+      ],
+    },
   });
   await writeJsonFile(path.join(workflowRootPath, 'workflow.json'), {
     kind: 'workflow_instruction_definition',
@@ -520,12 +607,12 @@ async function addMariaWithAlfredDedicatedChannel({ projectRootPath }) {
       buildBinding({
         resourceId: 'openrouter-api',
         accessMode: 'execute',
-        secretReferenceId: 'openrouter-api-key',
+        credentialReferenceId: 'openrouter-api-key',
       }),
       buildBinding({
         resourceId: 'gemini-api',
         accessMode: 'execute',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
       }),
       buildBinding({
         resourceId: 'alfred-whatsapp',
@@ -595,12 +682,12 @@ async function addJuanWithPublishTool({ projectRootPath }) {
       buildBinding({
         resourceId: 'openrouter-api',
         accessMode: 'execute',
-        secretReferenceId: 'openrouter-api-key',
+        credentialReferenceId: 'openrouter-api-key',
       }),
       buildBinding({
         resourceId: 'gemini-api',
         accessMode: 'execute',
-        secretReferenceId: 'gemini-api-key',
+        credentialReferenceId: 'gemini-api-key',
       }),
       buildBinding({
         resourceId: 'meta-channel',
@@ -652,7 +739,8 @@ async function invokeProbabilisticAcid({
   secondOutputText = null,
   inspectFirstRequest = null,
   inspectSecondRequest = null,
-  legacyIntentCompatibilityMode = 'disabled',
+  semanticIntentRuntimeMode = 'disabled',
+  semanticIntentClassifierAdapter = null,
 }) {
   let fetchCallCount = 0;
 
@@ -669,7 +757,8 @@ async function invokeProbabilisticAcid({
         command: 'ask',
         inputText,
         requestedBy: 'acid-test-suite',
-        legacyIntentCompatibilityMode,
+        semanticIntentRuntimeMode,
+        semanticIntentClassifierAdapter,
         fetchImplementation: async (url, options) => {
           fetchCallCount += 1;
           assert.equal(url, 'https://openrouter.ai/api/v1/chat/completions');
@@ -780,7 +869,22 @@ test('BE acid: explicit MAS inspection intent executes even when the brain forge
     inputText: 'Porfa inspeccionando el MAS nuevamente para saber si algo cambio.',
     firstOutputText: 'I can summarize this from memory without a runtime tool request.',
     secondOutputText: 'I inspected the MAS through runtime evidence after the explicit inspection request.',
-    legacyIntentCompatibilityMode: 'compatibility',
+    semanticIntentRuntimeMode: 'adapter',
+    semanticIntentClassifierAdapter: buildSemanticAdapterForTarget({
+      targetType: 'tool',
+      targetId: 'mas.system.inspect',
+      candidateId: 'candidate-acid-mas-system-inspect',
+      intentId: 'admin.mas.inspect',
+      intentType: 'administrative_inspection',
+      reason: 'The request semantically asks for a read-only MAS inspection.',
+      runtimeInput: {
+        includeCounts: true,
+      },
+      matchedSignals: [
+        'mas.system.inspect',
+        'inspect-mas',
+      ],
+    }),
     inspectFirstRequest: (body) => {
       assert.match(body.messages[0].content, /## Tool Availability/u);
     },
@@ -795,14 +899,15 @@ test('BE acid: explicit MAS inspection intent executes even when the brain forge
   assert.equal(result.output.toolRequestResolution.status, 'accepted');
   assert.equal(result.output.toolRequestResolution.requestedToolId, 'mas.system.inspect');
   assert.equal(result.output.intentResolution.status, 'resolved');
+  assert.equal(result.output.intentResolution.source, 'semantic_classifier');
   assert.equal(result.output.intentResolution.target.targetId, 'mas.system.inspect');
-  assert.equal(result.output.toolRequestResolution.toolRequest.toolRequestId, 'runtime-intent-admin-mas-inspect-001');
-  assert.match(result.output.toolRequestResolution.reason, /Runtime intent resolution accepted/u);
+  assert.match(result.output.toolRequestResolution.toolRequest.toolRequestId, /^semantic-tool-/u);
+  assert.match(result.output.toolRequestResolution.reason, /accepted for runtime execution/u);
   assert.equal(result.output.brainToolExecution.executionPerformed, true);
   assert.equal(result.output.brainToolObservation.status, 'succeeded');
   assert.equal(invocationSession.brainExecution.finalPassKind, 'tool_observation_followup');
   assert.match(invocationReport, /Intent Resolution/u);
-  assert.match(invocationReport, /Runtime intent resolution accepted/u);
+  assert.match(invocationReport, /Semantic Intent Runtime/u);
   assert.match(result.output.outputText, /runtime evidence/u);
 });
 
@@ -823,7 +928,31 @@ test('BE acid: explicit MAS health review intent runs workflow when the brain fo
     inputText: 'Please run a full MAS health review before answering.',
     firstOutputText: 'I can discuss MAS health from context without requesting a workflow.',
     secondOutputText: 'I ran the MAS health review workflow and can summarize the verified workflow observation.',
-    legacyIntentCompatibilityMode: 'compatibility',
+    semanticIntentRuntimeMode: 'adapter',
+    semanticIntentClassifierAdapter: buildSemanticAdapterForTarget({
+      targetType: 'workflow',
+      targetId: 'mas-health-review',
+      candidateId: 'candidate-acid-mas-health-review',
+      intentId: 'admin.mas.health_review',
+      intentType: 'administrative_health_review',
+      reason: 'The request semantically asks for a full MAS health review workflow.',
+      runtimeInput: {
+        requestedSections: [
+          'overview',
+          'agents',
+          'operationalIdentities',
+          'resources',
+          'tools',
+          'workflows',
+          'memory',
+          'warnings',
+        ],
+      },
+      matchedSignals: [
+        'mas-health-review',
+        'health-review',
+      ],
+    }),
     inspectFirstRequest: (body) => {
       assert.match(body.messages[0].content, /## Workflow Availability/u);
       assert.match(body.messages[0].content, /mas-health-review/u);
@@ -837,6 +966,7 @@ test('BE acid: explicit MAS health review intent runs workflow when the brain fo
   assert.equal(fetchCallCount, 2);
   assert.equal(result.status, 'completed');
   assert.equal(result.output.intentResolution.status, 'resolved');
+  assert.equal(result.output.intentResolution.source, 'semantic_classifier');
   assert.equal(result.output.intentResolution.target.targetType, 'workflow');
   assert.equal(result.output.intentResolution.target.targetId, 'mas-health-review');
   assert.equal(result.output.toolRequestResolution.status, 'no_request');
@@ -845,7 +975,7 @@ test('BE acid: explicit MAS health review intent runs workflow when the brain fo
   assert.equal(result.output.brainWorkflowExecution.executionPerformed, true);
   assert.equal(result.output.brainWorkflowObservation.status, 'succeeded');
   assert.equal(invocationSession.brainExecution.finalPassKind, 'workflow_observation_followup');
-  assert.match(invocationReport, /Runtime intent resolution accepted mas-health-review/u);
+  assert.match(invocationReport, /Semantic Intent Runtime/u);
   assert.match(result.output.outputText, /workflow observation/u);
 });
 
@@ -1035,7 +1165,7 @@ test('BE acid: Juan publish request creates human approval requirement without e
 
 test('BE acid: failed tool execution returns failure observation and final answer must not fabricate success', async () => {
   const projectRootPath = await createAlfredProbabilisticProjectFixture();
-  const failureSecretProbe = 'AIzaFAKE_BE_ACTION_FAILURE_SECRET';
+  const failureSecretProbe = buildFakeGeminiSecretProbe('FAKE_BE_ACTION_FAILURE_SECRET');
 
   await addAlfredInspectTool({
     projectRootPath,

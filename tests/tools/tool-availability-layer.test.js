@@ -97,13 +97,13 @@ function createAlfredBindingsContent() {
         resourceId: 'mas-filesystem',
         accessMode: 'read',
         bindingState: 'active',
-        secretReferenceId: null,
+        credentialReferenceId: null,
       },
       {
         resourceId: 'meta-channel',
         accessMode: 'publish',
         bindingState: 'active',
-        secretReferenceId: 'meta-token',
+        credentialReferenceId: 'meta-token',
       },
     ],
   };
@@ -180,16 +180,16 @@ async function createToolAvailabilityFixture() {
   ]);
 
   await writeJsonFile(
-    path.join(temporaryRootPath, 'config', 'secret-references.json'),
+    path.join(temporaryRootPath, 'config', 'credential-references.json'),
     {
-      kind: 'secret_reference_registry',
+      kind: 'credential_reference_registry',
       version: 1,
-      secretReferences: [
+      credentialReferences: [
         {
-          kind: 'secret_reference_definition',
+          kind: 'credential_reference_definition',
           version: 1,
-          secretReferenceId: 'meta-token',
-          secretType: 'access_token',
+          credentialReferenceId: 'meta-token',
+          credentialType: 'access_token',
           valueShape: 'string',
         },
       ],

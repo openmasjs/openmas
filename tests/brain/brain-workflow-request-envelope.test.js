@@ -7,12 +7,13 @@ import { parseBrainWorkflowRequestEnvelopeFromText } from '../../src/workflows/p
 import { resolveBrainWorkflowRequestForInvocation } from '../../src/workflows/resolve-brain-workflow-request-for-invocation.js';
 import { executeAcceptedBrainWorkflowRequest } from '../../src/workflows/execute-accepted-brain-workflow-request.js';
 import { runAgentInvocation } from '../../src/invocation/run-agent-invocation.js';
+import { buildFakeGeminiSecretProbe } from '../helpers/fake-secret-probes.js';
 import {
   createAlfredProbabilisticProjectFixture,
   withEnvironment,
 } from '../helpers/create-alfred-probabilistic-fixture.js';
 
-const FAKE_WORKFLOW_SECRET = 'AIzaFAKE_BRAIN_WORKFLOW_SECRET_SHOULD_NOT_LEAK';
+const FAKE_WORKFLOW_SECRET = buildFakeGeminiSecretProbe('FAKE_BRAIN_WORKFLOW_SECRET_SHOULD_NOT_LEAK');
 
 function buildBrainWorkflowRequestEnvelope(overrides = {}) {
   return {
@@ -193,19 +194,19 @@ async function addWorkflowRuntimeToAlfredFixture({
           resourceId: 'openrouter-api',
           accessMode: 'execute',
           bindingState: 'active',
-          secretReferenceId: 'openrouter-api-key',
+          credentialReferenceId: 'openrouter-api-key',
         },
         {
           resourceId: 'gemini-api',
           accessMode: 'execute',
           bindingState: 'active',
-          secretReferenceId: 'gemini-api-key',
+          credentialReferenceId: 'gemini-api-key',
         },
         {
           resourceId: 'mas-filesystem',
           accessMode: 'read',
           bindingState: 'active',
-          secretReferenceId: null,
+          credentialReferenceId: null,
         },
       ],
     },

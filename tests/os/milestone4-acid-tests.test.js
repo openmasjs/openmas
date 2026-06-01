@@ -92,7 +92,7 @@ function createParentProcess(overrides = {}) {
     conversationId: 'milestone-4-acid',
     memoryContextRefs: [],
     artifactRefs: [],
-    secretReferenceIds: [],
+    credentialReferenceIds: [],
     pendingApprovalRefs: [],
     warnings: [],
     createdAt: CREATED_AT,

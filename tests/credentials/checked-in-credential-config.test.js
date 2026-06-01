@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { assertOperationalIdentityBindings } from '../../src/contracts/binding-contract.js';
-import { assertSecretReferenceRegistry } from '../../src/contracts/secret-reference-contract.js';
+import { assertCredentialReferenceRegistry } from '../../src/contracts/credential-reference-contract.js';
 
-const SECRET_REFERENCE_NAMESPACE_PATTERN = /^(providers|channels|tools|custom)\.[a-z0-9][a-z0-9_.-]*$/u;
-const LEGACY_SECRET_REFERENCE_ID_PATTERN = /^(chatgpt|openrouter|claude|gemini|ollama)-api-key$|^(alfred-whatsapp|maria-instagram)-token$/u;
+const CREDENTIAL_REFERENCE_NAMESPACE_PATTERN = /^(providers|channels|tools|custom)\.[a-z0-9][a-z0-9_.-]*$/u;
+const LEGACY_CREDENTIAL_REFERENCE_ID_PATTERN = /^(chatgpt|openrouter|claude|gemini|ollama)-api-key$|^(alfred-whatsapp|maria-instagram)-token$/u;
 const LEGACY_ENV_VAR_METADATA_PATTERN = /environmentVariableName|resolverType|OPENMAS_/u;
 const BETA_REFERENCE_OPERATIONAL_IDENTITY_IDS = [
   'alfred',
@@ -29,23 +29,23 @@ async function readOptionalJsonFile(filePath) {
   }
 }
 
-function assertCleanSecretReferenceId(secretReferenceId) {
-  assert.match(secretReferenceId, SECRET_REFERENCE_NAMESPACE_PATTERN);
-  assert.doesNotMatch(secretReferenceId, LEGACY_SECRET_REFERENCE_ID_PATTERN);
+function assertCleanCredentialReferenceId(credentialReferenceId) {
+  assert.match(credentialReferenceId, CREDENTIAL_REFERENCE_NAMESPACE_PATTERN);
+  assert.doesNotMatch(credentialReferenceId, LEGACY_CREDENTIAL_REFERENCE_ID_PATTERN);
 }
 
-test('checked-in secret references and Beta Operational Identity bindings use namespaced vault ids', async () => {
+test('checked-in credential references and Beta Operational Identity bindings use namespaced vault ids', async () => {
   const projectRootPath = process.cwd();
-  const secretRegistryPath = path.join(projectRootPath, 'config', 'secret-references.json');
+  const credentialReferenceRegistryPath = path.join(projectRootPath, 'config', 'credential-references.json');
   const operationalIdentitiesRootPath = path.join(projectRootPath, 'instance', 'operational-identities');
-  const registryJson = await readJsonFile(secretRegistryPath);
-  const registry = assertSecretReferenceRegistry(registryJson);
-  const secretReferenceIds = new Set(registry.secretReferences.map((reference) => reference.secretReferenceId));
+  const registryJson = await readJsonFile(credentialReferenceRegistryPath);
+  const registry = assertCredentialReferenceRegistry(registryJson);
+  const credentialReferenceIds = new Set(registry.credentialReferences.map((reference) => reference.credentialReferenceId));
 
   assert.doesNotMatch(JSON.stringify(registryJson), LEGACY_ENV_VAR_METADATA_PATTERN);
 
-  for (const reference of registry.secretReferences) {
-    assertCleanSecretReferenceId(reference.secretReferenceId);
+  for (const reference of registry.credentialReferences) {
+    assertCleanCredentialReferenceId(reference.credentialReferenceId);
   }
 
   for (const operationalIdentityId of BETA_REFERENCE_OPERATIONAL_IDENTITY_IDS) {
@@ -60,15 +60,15 @@ test('checked-in secret references and Beta Operational Identity bindings use na
     assert.doesNotMatch(JSON.stringify(bindingsJson), LEGACY_ENV_VAR_METADATA_PATTERN);
 
     for (const binding of bindings.bindings) {
-      if (!binding.secretReferenceId) {
+      if (!binding.credentialReferenceId) {
         continue;
       }
 
-      assertCleanSecretReferenceId(binding.secretReferenceId);
+      assertCleanCredentialReferenceId(binding.credentialReferenceId);
       assert.equal(
-        secretReferenceIds.has(binding.secretReferenceId),
+        credentialReferenceIds.has(binding.credentialReferenceId),
         true,
-        `Binding ${bindings.operationalIdentityId}/${binding.resourceId} references an unknown secretReferenceId: ${binding.secretReferenceId}`,
+        `Binding ${bindings.operationalIdentityId}/${binding.resourceId} references an unknown credentialReferenceId: ${binding.credentialReferenceId}`,
       );
     }
   }

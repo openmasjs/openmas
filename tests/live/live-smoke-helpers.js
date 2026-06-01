@@ -2,7 +2,7 @@ import process from 'node:process';
 import { openCredentialVault } from '../../src/credentials/open-credential-vault.js';
 import { runOsManagedCliInvocation } from '../../bin/invoke-agent.js';
 
-export const LIVE_SECRET_REFERENCE_IDS = Object.freeze({
+export const LIVE_CREDENTIAL_REFERENCE_IDS = Object.freeze({
   geminiSharedDefault: 'providers.gemini.shared.default.api_key',
   ollamaSharedDefault: 'providers.ollama.shared.default.api_key',
   openRouterSharedDefault: 'providers.openrouter.shared.default.api_key',
@@ -83,24 +83,24 @@ export async function readLiveCredentialVault({
       reasonCode: 'credential_vault_file_missing',
       message: 'The OpenMAS Credential Vault file was not found.',
       probableCause: `Expected vault file does not exist: ${vault.vaultFilePath}`,
-      nextStep: 'Create or edit the development vault with the credentials CLI, then add the required provider secret references.',
+      nextStep: 'Create or edit the development vault with the credentials CLI, then add the required provider credential references.',
       details: [
         `Vault File: ${vault.vaultFilePath}`,
       ],
     });
   }
 
-  const missingSecretReferenceIds = requiredSecretReferenceIds.filter((secretReferenceId) => {
-    return !isNonEmptyString(vault.credentials[secretReferenceId]);
+  const missingCredentialReferenceIds = requiredSecretReferenceIds.filter((credentialReferenceId) => {
+    return !isNonEmptyString(vault.credentials[credentialReferenceId]);
   });
 
-  if (missingSecretReferenceIds.length > 0) {
+  if (missingCredentialReferenceIds.length > 0) {
     throw createLiveSmokeDiagnosticError({
       phase: 'credential_vault_secret_resolution',
       reasonCode: 'required_secret_reference_missing',
       message: 'The Credential Vault opened, but required provider secrets are missing.',
-      probableCause: `Missing secret references: ${missingSecretReferenceIds.join(', ')}`,
-      nextStep: 'Add the missing secret reference ids to the vault. The value must be the real provider API key, not an example placeholder.',
+      probableCause: `Missing credential references: ${missingCredentialReferenceIds.join(', ')}`,
+      nextStep: 'Add the missing credential reference ids to the vault. The value must be the real provider API key, not an example placeholder.',
       details: [
         `Vault File: ${vault.vaultFilePath}`,
         `Master Key Source: ${vault.masterKeySource}`,
@@ -111,16 +111,16 @@ export async function readLiveCredentialVault({
   return vault.credentials;
 }
 
-export function requireVaultSecret(credentials, secretReferenceId, label) {
-  const secretValue = credentials[secretReferenceId];
+export function requireVaultSecret(credentials, credentialReferenceId, label) {
+  const secretValue = credentials[credentialReferenceId];
 
   if (!isNonEmptyString(secretValue)) {
     throw createLiveSmokeDiagnosticError({
       phase: 'credential_vault_secret_resolution',
       reasonCode: 'required_secret_reference_missing',
-      message: `${secretReferenceId} is required in the OpenMAS Credential Vault for the ${label} live smoke test.`,
+      message: `${credentialReferenceId} is required in the OpenMAS Credential Vault for the ${label} live smoke test.`,
       probableCause: 'The vault opened, but this provider key is missing or blank.',
-      nextStep: `Add ${secretReferenceId} to the vault with a valid ${label} API key.`,
+      nextStep: `Add ${credentialReferenceId} to the vault with a valid ${label} API key.`,
     });
   }
 
@@ -140,12 +140,12 @@ export function assertNoSecretLeak(label, text) {
 export function printRequiredSecretReferenceStatus({ credentials, requiredSecretReferenceIds }) {
   console.log('Credential Vault Check: opened');
 
-  for (const secretReferenceId of requiredSecretReferenceIds) {
-    const status = isNonEmptyString(credentials?.[secretReferenceId])
+  for (const credentialReferenceId of requiredSecretReferenceIds) {
+    const status = isNonEmptyString(credentials?.[credentialReferenceId])
       ? 'present'
       : 'missing';
 
-    console.log(`Secret Reference: ${secretReferenceId} -> ${status}`);
+    console.log(`Credential Reference: ${credentialReferenceId} -> ${status}`);
   }
 
   console.log('');
@@ -170,7 +170,6 @@ export async function runLiveProbabilisticAgentTurn({
     inputText,
     requestedBy,
     semanticIntentRuntimeMode,
-    legacyIntentCompatibilityMode: 'disabled',
   });
 }
 
@@ -225,7 +224,7 @@ export function classifyProviderFailure({ result = null, error = null } = {}) {
 export function createProviderDiagnosticError({
   providerId,
   modelId,
-  secretReferenceId,
+  credentialReferenceId,
   result = null,
   error = null,
 }) {
@@ -242,7 +241,7 @@ export function createProviderDiagnosticError({
     details: [
       `Provider: ${providerId}`,
       `Model: ${modelId}`,
-      `Secret Reference: ${secretReferenceId}`,
+      `Credential Reference: ${credentialReferenceId}`,
       `Provider Status: ${providerStatus}`,
       `Provider Message: ${redactSecretLike(providerMessage)}`,
     ],
@@ -252,14 +251,14 @@ export function createProviderDiagnosticError({
 export function assertProviderCompleted({
   providerId,
   modelId,
-  secretReferenceId,
+  credentialReferenceId,
   result,
 }) {
   if (result.status !== 'completed') {
     throw createProviderDiagnosticError({
       providerId,
       modelId,
-      secretReferenceId,
+      credentialReferenceId,
       result,
     });
   }
@@ -268,7 +267,7 @@ export function assertProviderCompleted({
     throw createProviderDiagnosticError({
       providerId,
       modelId,
-      secretReferenceId,
+      credentialReferenceId,
       result: {
         ...result,
         errorMessage: 'Provider response did not include a readable output text.',
