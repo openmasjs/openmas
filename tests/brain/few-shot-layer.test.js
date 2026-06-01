@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { assertGoldenExampleSetDefinition } from '../../src/contracts/golden-example-contract.js';
+import { assertGoldenExampleSetDefinition } from '../../src/contracts/examples/golden-example-contract.js';
 import { buildFewShotLayer, FEW_SHOT_LAYER_PRIORITY } from '../../src/brain/build-few-shot-layer.js';
 import { readGoldenExamplesForInvocation } from '../../src/examples/read-golden-examples-for-invocation.js';
 import { runAgentInvocation } from '../../src/invocation/run-agent-invocation.js';

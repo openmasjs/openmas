@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertAgentExecutionPlan } from '../../src/contracts/agent-execution-plan-contract.js';
+import { assertAgentExecutionPlan } from '../../src/contracts/identity/agent-execution-plan-contract.js';
 
 function createClarificationRequest(overrides = {}) {
   return {

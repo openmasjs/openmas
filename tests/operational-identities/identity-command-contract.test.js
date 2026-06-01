@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertIdentityCommandExecutionOutcome } from '../../src/contracts/identity-command-contract.js';
+import { assertIdentityCommandExecutionOutcome } from '../../src/contracts/identity/identity-command-contract.js';
 
 test('assertIdentityCommandExecutionOutcome accepts a valid MAS-owned command outcome', () => {
   const outcome = assertIdentityCommandExecutionOutcome({

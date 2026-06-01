@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {
   assertMemorySourceReference,
   assertMemorySourceReferences,
-} from '../../src/contracts/memory-source-reference-contract.js';
-import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
+} from '../../src/contracts/memory/memory-source-reference-contract.js';
+import { assertMemoryRecord } from '../../src/contracts/memory/memory-record-contract.js';
 
 const VALID_CREATED_AT = '2026-04-14T00:00:00.000Z';
 const VALID_SHA_256 = 'a'.repeat(64);

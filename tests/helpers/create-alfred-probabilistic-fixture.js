@@ -3,7 +3,7 @@ import path from 'node:path';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { generateMasterKey } from '../../src/credentials/generate-master-key.js';
 import { writeCredentialVault } from '../../src/credentials/write-credential-vault.js';
-import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
+import { assertMemoryRecord } from '../../src/contracts/memory/memory-record-contract.js';
 import { createDurableMemoryRecordFileName } from '../../src/memory/write-durable-memory-record.js';
 import { writeSystemStewardCommandModules } from './write-system-steward-command-modules.js';
 

@@ -34,32 +34,37 @@
 ### What's Ready
 
 - Foundational architecture: Vision, Manifesto, Doctrine, Principles, Patterns, and Lexicon
-- AI Agent model based on Operational Identities and Cognitive Identities
+- Operational Identity-first Agent model with portable Cognitive Identities
 - Deterministic and probabilistic Agent invocation
-- Provider-agnostic adapter foundation, including OpenRouter and Gemini
+- Provider-agnostic adapter foundation for OpenRouter, Gemini, and Ollama
 - Prompt Factory Runtime v1
 - Memory and Context Factory v1
 - Governed durable memory integration
 - Credential Vault with AES-256-GCM encrypted, environment-specific credentials
-- Local OpenMAS OS Service foundation
+- Governed tools, workflows, permissions, approvals, and runtime evidence foundations
+- Local OpenMAS OS Service with bounded asynchronous execution
 - Singleton kernel lock, heartbeat, status, backpressure, and graceful shutdown
-- Kernel-managed System Call inbox, processor, result records, and boundary checks
-- One-shot scheduled jobs and scheduled delegation v1
-- Immediate Operational Identity delegation v1
-- Contract-first deterministic test suite and live runtime stress testing
+- Kernel-managed System Call inbox, processor, Result Store, Result Records, and boundary checks
+- Beta-certified Execution Triangle: foreground request/response, immediate delegation, and scheduled execution
+- Durable one-shot Timers, successor-kernel recovery, and separate scheduled release and child-result truth
+- Contract-first offline deterministic suite and live runtime stress gates
 
 ### What's In Progress
 
-- Source code and test cleanup for the first public baseline
-- Public README, licensing, contribution, and onboarding materials
-- Runtime hardening for the first beta release
-- Tool, workflow, and capability runtime expansion
-- Multi-agent conversation and coordination layers
-- Clearer public examples for installing and running an OpenMAS habitat
+- Regular-user Happy Onboarding Path design
+- Rails-like habitat creation, local command wrappers, and first-run experience
+- Public CLI contract, including `doctor`, credentials setup, invocation, and OS service commands
+- Starter habitat definition with Alfred and Bruce
+- Public baseline cleanup, documentation alignment, and Beta release polish
+- Human-friendly asynchronous result delivery for delegated and scheduled work
 
 ### What's Planned
 
-- CLI tooling and project scaffolding (`npx openmas init`)
+- Project scaffolding (`npm create openmas@latest <habitat>`) and existing-project initialization
+- Recurring and polling jobs
+- Conditional and event-driven execution
+- Interrupts, cancellation, pause, and priority override flows
+- Broader multi-agent conversations, pipelines, teams, and turn-based coordination
 - Observable runtime dashboard
 - Production deployment guidance for long-running OpenMAS OS Services
 - Additional provider, tool, workflow, and channel adapters

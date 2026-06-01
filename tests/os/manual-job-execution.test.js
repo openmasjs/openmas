@@ -7,7 +7,7 @@ import {
   runJobNow,
 } from '../../src/os/manual-job-execution.js';
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
-import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { OPENMAS_OS_KINDS } from '../../src/contracts/os/openmas-os-runtime-contract.js';
 import { createAlfredProbabilisticProjectFixture } from '../helpers/create-alfred-probabilistic-fixture.js';
 import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 

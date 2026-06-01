@@ -1,20 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertActionIntentMetadata } from '../../src/contracts/action-intent-metadata-contract.js';
+import { assertActionIntentMetadata } from '../../src/contracts/actions/action-intent-metadata-contract.js';
 import {
   assertToolDefinition,
   isToolActive,
   toolDefinitionRequiresApproval,
-} from '../../src/contracts/tool-definition-contract.js';
-import { assertToolResult } from '../../src/contracts/tool-result-contract.js';
+} from '../../src/contracts/tools/tool-definition-contract.js';
+import { assertToolResult } from '../../src/contracts/tools/tool-result-contract.js';
 import {
   assertWorkflowRuntimeDefinition,
   isWorkflowRuntimeActive,
-} from '../../src/contracts/workflow-runtime-contract.js';
+} from '../../src/contracts/workflows/workflow-runtime-contract.js';
 import {
   assertWorkflowRunState,
   isWorkflowRunTerminal,
-} from '../../src/contracts/workflow-run-state-contract.js';
+} from '../../src/contracts/workflows/workflow-run-state-contract.js';
 
 const VALID_CREATED_AT = '2026-04-16T00:00:00.000Z';
 const VALID_UPDATED_AT = '2026-04-16T00:01:00.000Z';

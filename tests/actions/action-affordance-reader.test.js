@@ -7,7 +7,7 @@ import {
   assertActionAffordance,
   assertActionAffordanceReadinessSummary,
   assertActionAffordances,
-} from '../../src/contracts/action-affordance-contract.js';
+} from '../../src/contracts/actions/action-affordance-contract.js';
 import { readActionAffordancesForInvocation } from '../../src/actions/read-action-affordances-for-invocation.js';
 
 async function writeJsonFile(filePath, payload) {

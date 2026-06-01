@@ -6,7 +6,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { readOperationalIdentitiesRegistry } from '../../src/operational-identities/read-operational-identities-registry.js';
 import { resolveOperationalIdentityRoot } from '../../src/operational-identities/resolve-operational-identity-root.js';
 import { readOperationalIdentityDefinition } from '../../src/operational-identities/read-operational-identity-definition.js';
-import { isOperationalIdentityActive } from '../../src/contracts/operational-identity-contract.js';
+import { isOperationalIdentityActive } from '../../src/contracts/identity/operational-identity-contract.js';
 
 async function createDirectoryTree(rootPath, relativePaths) {
   for (const relativePath of relativePaths) {

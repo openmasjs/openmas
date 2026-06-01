@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   assertMemoryWriteCandidate,
   assertMemoryWritebackRequest,
-} from '../../src/contracts/memory-writeback-contract.js';
+} from '../../src/contracts/memory/memory-writeback-contract.js';
 import { proposeMemoryWritebackForInvocation } from '../../src/context/propose-memory-writeback-for-invocation.js';
 
 const VALID_CREATED_AT = '2026-04-14T00:00:00.000Z';

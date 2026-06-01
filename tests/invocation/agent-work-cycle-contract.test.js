@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   AGENT_WORK_CYCLE_STAGE_IDS,
   assertAgentWorkCycleSummary,
-} from '../../src/contracts/agent-work-cycle-contract.js';
+} from '../../src/contracts/identity/agent-work-cycle-contract.js';
 
 function createStage(stageId, status = 'completed') {
   return {

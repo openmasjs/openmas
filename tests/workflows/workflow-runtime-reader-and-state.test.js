@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { assertWorkflowRuntimeDefinition } from '../../src/contracts/workflow-runtime-contract.js';
-import { assertWorkflowRunState } from '../../src/contracts/workflow-run-state-contract.js';
+import { assertWorkflowRuntimeDefinition } from '../../src/contracts/workflows/workflow-runtime-contract.js';
+import { assertWorkflowRunState } from '../../src/contracts/workflows/workflow-run-state-contract.js';
 import { createWorkflowRunState } from '../../src/workflows/create-workflow-run-state.js';
 import {
   readWorkflowRuntimeDefinition,

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { assertWorkflowInstructionDefinition } from '../../src/contracts/workflow-instruction-contract.js';
+import { assertWorkflowInstructionDefinition } from '../../src/contracts/workflows/workflow-instruction-contract.js';
 import { buildWorkflowLayer, WORKFLOW_LAYER_PRIORITY } from '../../src/brain/build-workflow-layer.js';
 import { readWorkflowInstructionsForInvocation } from '../../src/workflows/read-workflow-instructions-for-invocation.js';
 import { runAgentInvocation } from '../../src/invocation/run-agent-invocation.js';

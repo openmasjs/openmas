@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertBrainOutput } from '../../src/contracts/brain-output-contract.js';
+import { assertBrainOutput } from '../../src/contracts/brain/brain-output-contract.js';
 import { normalizeProviderResponseToBrainOutput } from '../../src/brain/normalize-provider-response-to-brain-output.js';
 import { buildActionClaimReportEnvelope } from '../../src/actions/action-claim-report-envelope.js';
 

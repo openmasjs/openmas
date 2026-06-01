@@ -16,6 +16,16 @@ const RUNTIME_EVIDENCE_ROOTS = Object.freeze([
   'instance/memory/artifacts',
 ]);
 
+function isMissingFileError(error) {
+  return error !== null
+    && typeof error === 'object'
+    && error.code === 'ENOENT';
+}
+
+function isTransientPublicationFileName(fileName) {
+  return fileName.endsWith('.tmp');
+}
+
 function collectSecretScalars(value, credentialReferenceId, secrets = []) {
   if (typeof value === 'string' && value.length > 0) {
     secrets.push({
@@ -46,7 +56,7 @@ async function listFilesRecursively(rootPath) {
 
     if (entry.isDirectory()) {
       files.push(...await listFilesRecursively(childPath));
-    } else if (entry.isFile()) {
+    } else if (entry.isFile() && !isTransientPublicationFileName(entry.name)) {
       files.push(childPath);
     }
   }
@@ -94,9 +104,22 @@ async function scanRuntimeEvidence({
     }))
   ).flat();
   const findings = [];
+  let scannedEvidenceFileCount = 0;
 
   for (const filePath of evidenceFiles) {
-    const fileContent = await readFile(filePath, 'utf8');
+    let fileContent;
+
+    try {
+      fileContent = await readFile(filePath, 'utf8');
+    } catch (error) {
+      if (isMissingFileError(error)) {
+        continue;
+      }
+
+      throw error;
+    }
+
+    scannedEvidenceFileCount += 1;
 
     assertNoSecretLeak(`Runtime evidence file ${path.relative(projectRootPath, filePath)}`, fileContent);
 
@@ -111,7 +134,7 @@ async function scanRuntimeEvidence({
   }
 
   return {
-    evidenceFileCount: evidenceFiles.length,
+    evidenceFileCount: scannedEvidenceFileCount,
     inspectedSecretScalarCount: secrets.length,
     findings,
   };

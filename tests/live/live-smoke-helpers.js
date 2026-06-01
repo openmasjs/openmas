@@ -97,7 +97,7 @@ export async function readLiveCredentialVault({
   if (missingCredentialReferenceIds.length > 0) {
     throw createLiveSmokeDiagnosticError({
       phase: 'credential_vault_secret_resolution',
-      reasonCode: 'required_secret_reference_missing',
+      reasonCode: 'required_credential_reference_missing',
       message: 'The Credential Vault opened, but required provider secrets are missing.',
       probableCause: `Missing credential references: ${missingCredentialReferenceIds.join(', ')}`,
       nextStep: 'Add the missing credential reference ids to the vault. The value must be the real provider API key, not an example placeholder.',
@@ -117,7 +117,7 @@ export function requireVaultSecret(credentials, credentialReferenceId, label) {
   if (!isNonEmptyString(secretValue)) {
     throw createLiveSmokeDiagnosticError({
       phase: 'credential_vault_secret_resolution',
-      reasonCode: 'required_secret_reference_missing',
+      reasonCode: 'required_credential_reference_missing',
       message: `${credentialReferenceId} is required in the OpenMAS Credential Vault for the ${label} live smoke test.`,
       probableCause: 'The vault opened, but this provider key is missing or blank.',
       nextStep: `Add ${credentialReferenceId} to the vault with a valid ${label} API key.`,

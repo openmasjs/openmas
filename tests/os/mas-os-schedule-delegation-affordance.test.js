@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
-import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { OPENMAS_OS_KINDS } from '../../src/contracts/os/openmas-os-runtime-contract.js';
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
 import { executeMasOsScheduleDelegation } from '../../src/os/actions/mas-os-schedule-delegation-runtime.js';
 import { createLocalSystemCallInbox } from '../../src/os/system-calls/local-system-call-inbox.js';

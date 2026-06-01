@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assertProviderRetryPolicy,
-} from '../../src/contracts/provider-retry-policy-contract.js';
+} from '../../src/contracts/providers/provider-retry-policy-contract.js';
 import { resolveProviderRetryDecision } from '../../src/providers/resolve-provider-retry-decision.js';
 
 function buildProviderFailure(overrides = {}) {

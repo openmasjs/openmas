@@ -12,7 +12,7 @@ import {
   runDueOneShotJobsNow,
   scheduleOneShotJob,
 } from '../../src/os/scheduler/one-shot-scheduled-jobs.js';
-import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { OPENMAS_OS_KINDS } from '../../src/contracts/os/openmas-os-runtime-contract.js';
 
 const CREATED_AT = '2026-05-14T10:00:00-05:00';
 const RUN_AT = '2026-05-14T10:05:00-05:00';

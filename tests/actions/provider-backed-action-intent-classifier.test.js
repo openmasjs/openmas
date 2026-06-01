@@ -9,7 +9,7 @@ import {
   classifyActionIntentWithProvider,
   parseProviderIntentClassificationOutput,
 } from '../../src/actions/provider-backed-action-intent-classifier.js';
-import { assertActionIntent } from '../../src/contracts/action-intent-contract.js';
+import { assertActionIntent } from '../../src/contracts/actions/action-intent-contract.js';
 
 function buildPreparedProvider(overrides = {}) {
   return {

@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertChannelMessageRequest } from '../../src/contracts/channel-message-contract.js';
+import { assertChannelMessageRequest } from '../../src/contracts/channels/channel-message-contract.js';
 import {
   assertChannelDeliveryRequest,
   assertChannelDeliveryState,
   isChannelDeliveryTerminal,
-} from '../../src/contracts/channel-delivery-state-contract.js';
+} from '../../src/contracts/channels/channel-delivery-state-contract.js';
 import { createChannelDeliveryRequest } from '../../src/channels/create-channel-delivery-request.js';
 import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 

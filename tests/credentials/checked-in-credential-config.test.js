@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
-import { assertOperationalIdentityBindings } from '../../src/contracts/binding-contract.js';
-import { assertCredentialReferenceRegistry } from '../../src/contracts/credential-reference-contract.js';
+import { assertOperationalIdentityBindings } from '../../src/contracts/access/binding-contract.js';
+import { assertCredentialReferenceRegistry } from '../../src/contracts/credentials/credential-reference-contract.js';
 
 const CREDENTIAL_REFERENCE_NAMESPACE_PATTERN = /^(providers|channels|tools|custom)\.[a-z0-9][a-z0-9_.-]*$/u;
 const LEGACY_CREDENTIAL_REFERENCE_ID_PATTERN = /^(chatgpt|openrouter|claude|gemini|ollama)-api-key$|^(alfred-whatsapp|maria-instagram)-token$/u;

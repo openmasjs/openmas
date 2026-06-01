@@ -1,0 +1,30 @@
+export function openBootSession({
+  bootId,
+  requestedBy,
+  strict,
+  projectRootPath,
+  masRootPath,
+  masRootHint,
+  status,
+  warnings,
+  errors,
+  invocationReadiness,
+  startedAt,
+  finishedAt,
+}) {
+  return {
+    kind: 'system_boot_session',
+    bootId,
+    requestedBy,
+    strict,
+    projectRootPath,
+    masRootPath,
+    masRootHint,
+    status,
+    warnings,
+    errors,
+    invocationReadiness,
+    startedAt,
+    finishedAt,
+  };
+}

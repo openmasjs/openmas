@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { runDeterministicCommand } from '../../instance/cognitive-identities/system-steward/commands/memory-health.js';
-import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
+import { assertMemoryRecord } from '../../src/contracts/memory/memory-record-contract.js';
 import { createDurableMemoryRecordFileName } from '../../src/memory/write-durable-memory-record.js';
 import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';
 

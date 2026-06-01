@@ -8,7 +8,7 @@ import {
   printInvocationSummary,
   runOsManagedCliInvocation,
 } from '../../bin/invoke-agent.js';
-import { OPENMAS_OS_SYSTEM_CALL_KINDS } from '../../src/contracts/openmas-os-system-call-contract.js';
+import { OPENMAS_OS_SYSTEM_CALL_KINDS } from '../../src/contracts/os/openmas-os-system-call-contract.js';
 import { createLocalSystemCallInbox } from '../../src/os/system-calls/local-system-call-inbox.js';
 
 function createProbabilisticOptions(projectRootPath) {

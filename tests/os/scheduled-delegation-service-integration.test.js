@@ -8,7 +8,7 @@ import {
   readdir,
   writeFile,
 } from 'node:fs/promises';
-import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { OPENMAS_OS_KINDS } from '../../src/contracts/os/openmas-os-runtime-contract.js';
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
 import { executeMasOsScheduleDelegation } from '../../src/os/actions/mas-os-schedule-delegation-runtime.js';
 import { runOpenMasOsServiceTick } from '../../src/os/service/local-os-service.js';

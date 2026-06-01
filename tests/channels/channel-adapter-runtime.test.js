@@ -7,8 +7,8 @@ import { assertChannelAdapter } from '../../src/channels/base-channel-adapter.js
 import { resolveChannelAdapter } from '../../src/channels/resolve-channel-adapter.js';
 import { executeChannelDeliveryRequest } from '../../src/channels/execute-channel-delivery-request.js';
 import { createChannelDeliveryRequest } from '../../src/channels/create-channel-delivery-request.js';
-import { assertChannelDeliveryRequest } from '../../src/contracts/channel-delivery-state-contract.js';
-import { assertChannelDeliveryResult } from '../../src/contracts/channel-delivery-result-contract.js';
+import { assertChannelDeliveryRequest } from '../../src/contracts/channels/channel-delivery-state-contract.js';
+import { assertChannelDeliveryResult } from '../../src/contracts/channels/channel-delivery-result-contract.js';
 import { persistChannelDeliveryResultForInvocation } from '../../src/channels/persist-channel-delivery-result-for-invocation.js';
 
 const VALID_REQUESTED_AT = '2026-04-17T10:00:00.000Z';

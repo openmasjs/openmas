@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertProviderFailure } from '../../src/contracts/provider-failure-contract.js';
+import { assertProviderFailure } from '../../src/contracts/providers/provider-failure-contract.js';
 import { classifyProviderFailure } from '../../src/providers/classify-provider-failure.js';
 import { buildFakeGeminiSecretProbe, buildFakeOpenAiSecretProbe } from '../helpers/fake-secret-probes.js';
 

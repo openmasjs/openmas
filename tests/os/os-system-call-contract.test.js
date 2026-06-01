@@ -8,7 +8,7 @@ import {
   OPENMAS_OS_SYSTEM_CALL_STATUSES,
   assertOpenMasOsSystemCall,
   assertOpenMasOsSystemCallResult,
-} from '../../src/contracts/openmas-os-system-call-contract.js';
+} from '../../src/contracts/os/openmas-os-system-call-contract.js';
 
 const NOW = '2026-05-19T10:00:00-05:00';
 const LATER = '2026-05-19T10:10:00-05:00';

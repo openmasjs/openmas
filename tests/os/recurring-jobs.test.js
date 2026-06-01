@@ -15,7 +15,7 @@ import {
   applySignal,
   createOpenMasOsSignal,
 } from '../../src/os/signals/signal-manager.js';
-import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
+import { OPENMAS_OS_KINDS } from '../../src/contracts/os/openmas-os-runtime-contract.js';
 
 const CREATED_AT = '2026-05-14T10:00:00-05:00';
 const FIRST_RUN_AT = '2026-05-14T15:05:00.000Z';

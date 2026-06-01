@@ -8,7 +8,7 @@
   "scripts": {
     "boot": "node ./bin/boot.js",
     "invoke:agent": "node ./bin/invoke-agent.js",
-    "lint": "eslint tests",
+    "lint": "eslint bin src tests",
     "lint:tests": "eslint tests",
     "test": "node ./tests/run-tests.js",
     "test:live:providers": "node ./tests/live/provider-vault-smoke-test.js",

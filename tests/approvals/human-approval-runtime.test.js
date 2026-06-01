@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { assertHumanApprovalState } from '../../src/contracts/human-approval-state-contract.js';
+import { assertHumanApprovalState } from '../../src/contracts/approvals/human-approval-state-contract.js';
 import { createHumanApprovalRuntimeForToolRequest } from '../../src/approvals/create-human-approval-runtime-for-tool-request.js';
 import { writeHumanApprovalRuntimeArtifacts } from '../../src/approvals/write-human-approval-runtime-artifacts.js';
 import { decideHumanApprovalRequest } from '../../src/approvals/decide-human-approval-request.js';

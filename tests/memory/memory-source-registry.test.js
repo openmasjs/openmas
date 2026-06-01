@@ -6,7 +6,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import {
   assertMemorySourceRegistry,
   selectActiveMemorySources,
-} from '../../src/contracts/memory-source-registry-contract.js';
+} from '../../src/contracts/memory/memory-source-registry-contract.js';
 import { buildDefaultMemorySourceRegistry } from '../../src/memory/build-default-memory-source-registry.js';
 import { readMemorySourceRegistry } from '../../src/memory/read-memory-source-registry.js';
 

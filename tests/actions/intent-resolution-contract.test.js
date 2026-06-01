@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertIntentResolution } from '../../src/contracts/intent-resolution-contract.js';
+import { assertIntentResolution } from '../../src/contracts/actions/intent-resolution-contract.js';
 
 test('assertIntentResolution accepts resolved preview-only tool intents without synthesizing execution', () => {
   const resolution = assertIntentResolution({

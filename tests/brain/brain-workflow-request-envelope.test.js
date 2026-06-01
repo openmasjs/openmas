@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { assertBrainWorkflowRequestEnvelope } from '../../src/contracts/brain-workflow-request-contract.js';
+import { assertBrainWorkflowRequestEnvelope } from '../../src/contracts/brain/brain-workflow-request-contract.js';
 import { parseBrainWorkflowRequestEnvelopeFromText } from '../../src/workflows/parse-brain-workflow-request-envelope.js';
 import { resolveBrainWorkflowRequestForInvocation } from '../../src/workflows/resolve-brain-workflow-request-for-invocation.js';
 import { executeAcceptedBrainWorkflowRequest } from '../../src/workflows/execute-accepted-brain-workflow-request.js';

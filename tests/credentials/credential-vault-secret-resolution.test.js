@@ -5,7 +5,7 @@ import path from 'node:path';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { generateMasterKey } from '../../src/credentials/generate-master-key.js';
 import { writeCredentialVault } from '../../src/credentials/write-credential-vault.js';
-import { assertCredentialReferenceRegistry } from '../../src/contracts/credential-reference-contract.js';
+import { assertCredentialReferenceRegistry } from '../../src/contracts/credentials/credential-reference-contract.js';
 import { collectReferencedCredentialReferenceIds } from '../../src/credential-references/collect-referenced-credential-reference-ids.js';
 import { resolveCredentialReferencesForInvocation } from '../../src/credential-references/resolve-credential-references-for-invocation.js';
 import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { assertInstructionLayer } from '../../src/contracts/instruction-layer-contract.js';
+import { assertInstructionLayer } from '../../src/contracts/brain/instruction-layer-contract.js';
 import {
   applyPromptBudgetToInstructionLayers,
   createDefaultPromptBudgetPolicy,

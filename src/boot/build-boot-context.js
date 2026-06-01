@@ -1,0 +1,30 @@
+export function buildBootContext({
+  bootId,
+  status,
+  projectRootPath,
+  masRootPath,
+  masRootHint,
+  projectValidation,
+  masValidation,
+  warnings,
+  errors,
+  invocationReadiness,
+  startedAt,
+  finishedAt,
+}) {
+  return {
+    kind: 'system_boot_context',
+    bootId,
+    status,
+    projectRootPath,
+    masRootPath,
+    masRootHint,
+    projectValidation,
+    masValidation,
+    warnings,
+    errors,
+    invocationReadiness,
+    startedAt,
+    finishedAt,
+  };
+}

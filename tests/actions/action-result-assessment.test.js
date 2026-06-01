@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertActionResultAssessment } from '../../src/contracts/action-result-assessment-contract.js';
+import { assertActionResultAssessment } from '../../src/contracts/actions/action-result-assessment-contract.js';
 import { evaluateActionResultAssessmentForInvocation } from '../../src/actions/evaluate-action-result-assessment-for-invocation.js';
 
 function buildBrainOutput(overrides = {}) {

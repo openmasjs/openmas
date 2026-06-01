@@ -12,6 +12,8 @@ export default [
   },
   {
     files: [
+      'bin/**/*.js',
+      'src/**/*.js',
       'tests/**/*.js',
     ],
     languageOptions: {

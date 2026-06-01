@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   assertContextPack,
   assertContextPackSection,
-} from '../../src/contracts/context-pack-contract.js';
+} from '../../src/contracts/context/context-pack-contract.js';
 
 const VALID_CREATED_AT = '2026-04-14T00:00:00.000Z';
 const VALID_SHA_256 = 'b'.repeat(64);

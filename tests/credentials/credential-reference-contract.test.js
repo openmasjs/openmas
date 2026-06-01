@@ -6,7 +6,7 @@ import {
   assertResolvedCredentialReference,
   assertCredentialReferenceDefinition,
   assertCredentialReferenceRegistry,
-} from '../../src/contracts/credential-reference-contract.js';
+} from '../../src/contracts/credentials/credential-reference-contract.js';
 
 function createDefinition(overrides = {}) {
   return {

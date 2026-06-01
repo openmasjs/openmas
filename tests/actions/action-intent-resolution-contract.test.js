@@ -5,8 +5,8 @@ import {
   assertActionClarificationRequest,
   assertActionIntent,
   assertActionRequestUnderstanding,
-} from '../../src/contracts/action-intent-contract.js';
-import { assertActionResolution } from '../../src/contracts/action-resolution-contract.js';
+} from '../../src/contracts/actions/action-intent-contract.js';
+import { assertActionResolution } from '../../src/contracts/actions/action-resolution-contract.js';
 
 function buildRequestUnderstanding(overrides = {}) {
   return {

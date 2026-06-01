@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdir, mkdtemp, utimes, writeFile } from 'node:fs/promises';
-import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
+import { assertMemoryRecord } from '../../src/contracts/memory/memory-record-contract.js';
 import { buildContextPackForInvocation } from '../../src/context/build-context-pack-for-invocation.js';
 import { estimateContextTokens } from '../../src/context/summarize-memory-record-for-context.js';
 import { createDurableMemoryRecordFileName } from '../../src/memory/write-durable-memory-record.js';

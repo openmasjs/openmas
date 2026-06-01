@@ -8,7 +8,7 @@ import {
   assertOpenMasOsResultRecord,
   assertOpenMasOsResultSummary,
   createOpenMasOsResultSummaryFromRecord,
-} from '../../src/contracts/openmas-os-result-record-contract.js';
+} from '../../src/contracts/os/openmas-os-result-record-contract.js';
 
 const NOW = '2026-05-23T10:00:00-05:00';
 const LATER = '2026-05-23T10:00:07-05:00';

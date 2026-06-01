@@ -4,7 +4,7 @@ import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js
 import {
   OPENMAS_OS_ACTION_KINDS,
   assertOpenMasOsActionResult,
-} from '../../src/contracts/openmas-os-action-request-contract.js';
+} from '../../src/contracts/os/openmas-os-action-request-contract.js';
 import {
   createOsActionGate,
   evaluateOsActionRequest,

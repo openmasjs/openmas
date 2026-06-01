@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assertProviderRequest,
-} from '../../src/contracts/provider-request-contract.js';
+} from '../../src/contracts/providers/provider-request-contract.js';
 import {
   assertProviderResponse,
-} from '../../src/contracts/provider-response-contract.js';
+} from '../../src/contracts/providers/provider-response-contract.js';
 import { resolveProviderAdapter } from '../../src/providers/resolve-provider-adapter.js';
 import { executeProviderRequest } from '../../src/providers/execute-provider-request.js';
 

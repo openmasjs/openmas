@@ -8,8 +8,8 @@ import { writeCredentialVault } from '../../src/credentials/write-credential-vau
 import {
   assertCredentialReferenceDefinition,
   assertCredentialReferenceRegistry,
-} from '../../src/contracts/credential-reference-contract.js';
-import { assertProviderIntegrationPreparation } from '../../src/contracts/provider-integration-contract.js';
+} from '../../src/contracts/credentials/credential-reference-contract.js';
+import { assertProviderIntegrationPreparation } from '../../src/contracts/providers/provider-integration-contract.js';
 import { readCredentialReferenceRegistry } from '../../src/credential-references/read-credential-reference-registry.js';
 import { resolveCredentialReferenceDefinition } from '../../src/credential-references/resolve-credential-reference-definition.js';
 import { resolveCredentialReferencesForInvocation } from '../../src/credential-references/resolve-credential-references-for-invocation.js';

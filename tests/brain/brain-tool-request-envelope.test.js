@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { assertBrainToolRequestEnvelope } from '../../src/contracts/brain-tool-request-contract.js';
+import { assertBrainToolRequestEnvelope } from '../../src/contracts/brain/brain-tool-request-contract.js';
 import { parseBrainToolRequestEnvelopeFromText } from '../../src/tools/parse-brain-tool-request-envelope.js';
 import { resolveBrainToolRequestForInvocation } from '../../src/tools/resolve-brain-tool-request-for-invocation.js';
 import { runAgentInvocation } from '../../src/invocation/run-agent-invocation.js';

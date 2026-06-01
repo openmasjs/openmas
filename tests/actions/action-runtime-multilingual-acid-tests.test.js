@@ -7,7 +7,7 @@ import {
   classifyActionIntentForInvocation,
 } from '../../src/actions/classify-action-intent-for-invocation.js';
 import { resolveActionForInvocation } from '../../src/actions/resolve-action-for-invocation.js';
-import { assertActionIntent } from '../../src/contracts/action-intent-contract.js';
+import { assertActionIntent } from '../../src/contracts/actions/action-intent-contract.js';
 
 function buildReadinessSummary({
   status = 'ready',

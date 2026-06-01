@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
+import { assertMemoryRecord } from '../../src/contracts/memory/memory-record-contract.js';
 import { auditMemoryQuality } from '../../src/memory/audit-memory-quality.js';
 import { buildMemoryAuditReport } from '../../src/memory/build-memory-audit-report.js';
 import { buildFakeOpenRouterSecretProbe } from '../helpers/fake-secret-probes.js';

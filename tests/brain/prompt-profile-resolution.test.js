@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { assertPromptProfileDefinition } from '../../src/contracts/prompt-profile-contract.js';
+import { assertPromptProfileDefinition } from '../../src/contracts/prompts/prompt-profile-contract.js';
 import { createDefaultPromptBudgetPolicy, DEFAULT_PROMPT_BUDGET_POLICY } from '../../src/brain/apply-prompt-budget-to-instruction-layers.js';
 import { readPromptProfileForInvocation } from '../../src/prompt-profiles/read-prompt-profile-for-invocation.js';
 import { runSystemBoot } from '../../src/boot/run-system-boot.js';

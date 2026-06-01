@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertMemoryRecord } from '../../src/contracts/memory-record-contract.js';
+import { assertMemoryRecord } from '../../src/contracts/memory/memory-record-contract.js';
 import { buildContextPackForInvocation } from '../../src/context/build-context-pack-for-invocation.js';
 import { evaluateMemoryRetention } from '../../src/memory/evaluate-memory-retention.js';
 import { evaluateMemoryStaleness } from '../../src/memory/evaluate-memory-staleness.js';

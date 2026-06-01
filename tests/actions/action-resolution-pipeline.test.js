@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveActionForInvocation } from '../../src/actions/resolve-action-for-invocation.js';
-import { assertActionIntent } from '../../src/contracts/action-intent-contract.js';
+import { assertActionIntent } from '../../src/contracts/actions/action-intent-contract.js';
 
 function buildRequestUnderstanding(overrides = {}) {
   return {

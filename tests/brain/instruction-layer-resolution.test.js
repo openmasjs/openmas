@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   assertInstructionLayer,
   assertInstructionLayers,
-} from '../../src/contracts/instruction-layer-contract.js';
+} from '../../src/contracts/brain/instruction-layer-contract.js';
 import {
   buildSystemInstructions,
   buildSystemInstructionsFromLayers,

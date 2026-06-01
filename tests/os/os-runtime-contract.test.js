@@ -13,7 +13,7 @@ import {
   assertOpenMasOsSignal,
   assertOpenMasOsThread,
   assertSafeOsSerializableValue,
-} from '../../src/contracts/openmas-os-runtime-contract.js';
+} from '../../src/contracts/os/openmas-os-runtime-contract.js';
 
 const NOW = '2026-05-14T10:00:00-05:00';
 

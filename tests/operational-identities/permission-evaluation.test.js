@@ -6,7 +6,7 @@ import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import {
   assertPermissionRule,
   assertOperationalIdentityPermissions,
-} from '../../src/contracts/permission-contract.js';
+} from '../../src/contracts/access/permission-contract.js';
 import { readPermissionDefinitions } from '../../src/operational-identities/read-permission-definitions.js';
 import { evaluatePermissionsForInvocation } from '../../src/operational-identities/evaluate-permissions-for-invocation.js';
 import { runSystemBoot } from '../../src/boot/run-system-boot.js';

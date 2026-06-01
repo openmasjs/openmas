@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertPromptProvenance } from '../../src/contracts/prompt-provenance-contract.js';
+import { assertPromptProvenance } from '../../src/contracts/prompts/prompt-provenance-contract.js';
 import { buildPromptProvenance } from '../../src/brain/build-prompt-provenance.js';
 import { buildContextPackLayer } from '../../src/brain/build-context-pack-layer.js';
 import { resolveInstructionLayersForInvocation } from '../../src/brain/resolve-instruction-layers-for-invocation.js';
 import { buildSystemInstructionsFromLayers } from '../../src/brain/build-system-instructions.js';
 import { buildProviderRequest } from '../../src/brain/build-provider-request.js';
-import { assertBrainInput } from '../../src/contracts/brain-input-contract.js';
+import { assertBrainInput } from '../../src/contracts/brain/brain-input-contract.js';
 
 const VALID_CREATED_AT = '2026-04-14T00:00:00.000Z';
 const VALID_SHA_256 = 'e'.repeat(64);

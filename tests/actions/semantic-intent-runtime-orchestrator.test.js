@@ -6,7 +6,7 @@ import {
   buildSemanticClassifierCandidateFromAffordance,
 } from '../../src/actions/classify-action-intent-for-invocation.js';
 import { runSemanticIntentRuntimeForInvocation } from '../../src/actions/run-semantic-intent-runtime-for-invocation.js';
-import { assertActionIntent } from '../../src/contracts/action-intent-contract.js';
+import { assertActionIntent } from '../../src/contracts/actions/action-intent-contract.js';
 
 function buildReadinessSummary(overrides = {}) {
   return {

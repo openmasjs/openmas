@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
-import { OPENMAS_OS_KINDS } from '../../src/contracts/openmas-os-runtime-contract.js';
-import { OPENMAS_OS_SYSTEM_CALL_KINDS } from '../../src/contracts/openmas-os-system-call-contract.js';
+import { OPENMAS_OS_KINDS } from '../../src/contracts/os/openmas-os-runtime-contract.js';
+import { OPENMAS_OS_SYSTEM_CALL_KINDS } from '../../src/contracts/os/openmas-os-system-call-contract.js';
 import { createLocalRuntimeAdapter } from '../../src/os/adapters/local-runtime-adapter.js';
 import {
   createLocalAsyncDispatchExecutor,

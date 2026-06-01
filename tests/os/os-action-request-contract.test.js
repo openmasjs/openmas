@@ -7,7 +7,7 @@ import {
   OPENMAS_OS_ACTION_TYPES,
   assertOpenMasOsActionRequest,
   assertOpenMasOsActionResult,
-} from '../../src/contracts/openmas-os-action-request-contract.js';
+} from '../../src/contracts/os/openmas-os-action-request-contract.js';
 
 const NOW = '2026-05-15T10:00:00-05:00';
 
