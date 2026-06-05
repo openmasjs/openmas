@@ -1,0 +1,24 @@
+{
+  "kind": "openmas_delegation_policy",
+  "version": 1,
+  "defaultEffect": "deny",
+  "rules": [
+    {
+      "ruleId": "allow-alfred-to-bruce-probabilistic-ask",
+      "effect": "allow",
+      "fromOperationalIdentityId": "alfred",
+      "toOperationalIdentityId": "bruce",
+      "actionTypes": [
+        "delegate",
+        "schedule_delegation"
+      ],
+      "commands": [
+        "ask"
+      ],
+      "modes": [
+        "probabilistic"
+      ],
+      "description": "Allows Alfred to delegate starter habitat inspection and review questions to Bruce through governed OS actions."
+    }
+  ]
+}

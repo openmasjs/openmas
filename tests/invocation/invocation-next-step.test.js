@@ -104,9 +104,33 @@ test('buildInvocationNextStep gives provider readiness guidance for blocked prob
       invocationMode: 'probabilistic',
       command: 'ask',
     },
+    readiness: {
+      secretResolution: {
+        credentialVaultEnvironment: 'development',
+      },
+    },
   });
 
   assert.match(nextStep, /provider, secret, binding, or readiness prerequisite/u);
+  assert.match(nextStep, /npx openmas credentials edit development/u);
+  assertNoHistoricalRoadmapLanguage(nextStep);
+});
+
+test('buildInvocationNextStep uses the resolved credential vault environment in blocked probabilistic guidance', () => {
+  const nextStep = buildInvocationNextStep({
+    status: 'blocked',
+    request: {
+      invocationMode: 'probabilistic',
+      command: 'ask',
+    },
+    readiness: {
+      secretResolution: {
+        credentialVaultEnvironment: 'staging',
+      },
+    },
+  });
+
+  assert.match(nextStep, /npx openmas credentials edit staging/u);
   assertNoHistoricalRoadmapLanguage(nextStep);
 });
 

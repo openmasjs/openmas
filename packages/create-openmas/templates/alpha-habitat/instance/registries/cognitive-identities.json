@@ -1,0 +1,16 @@
+{
+  "kind": "cognitive_identities_registry",
+  "version": 1,
+  "cognitiveIdentities": [
+    {
+      "cognitiveIdentityId": "system-steward",
+      "rootPath": "system-steward",
+      "category": "platform"
+    },
+    {
+      "cognitiveIdentityId": "evaluation-audit-steward",
+      "rootPath": "stewards/evaluation-audit",
+      "category": "platform"
+    }
+  ]
+}

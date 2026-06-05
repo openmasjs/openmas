@@ -1,0 +1,39 @@
+{
+  "name": "create-openmas",
+  "version": "0.1.0-alpha.1",
+  "private": false,
+  "description": "Create an OpenMAS AI-native habitat",
+  "homepage": "https://openmas.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openmasjs/openmas.git",
+    "directory": "packages/create-openmas"
+  },
+  "bugs": {
+    "url": "https://github.com/openmasjs/openmas/issues"
+  },
+  "type": "module",
+  "bin": {
+    "create-openmas": "./bin/create-openmas.js"
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "bin/",
+    "templates/"
+  ],
+  "publishConfig": {
+    "tag": "alpha"
+  },
+  "keywords": [
+    "openmas",
+    "create-openmas",
+    "multi-agent-system",
+    "mas",
+    "scaffold"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

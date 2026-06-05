@@ -1,6 +1,11 @@
 import path from 'node:path';
 import { access, readFile } from 'node:fs/promises';
 
+const SUPPORTED_OPENMAS_PROJECT_KINDS = new Set([
+  'framework',
+  'habitat',
+]);
+
 async function ensurePathExists(targetPath, description) {
   try {
     await access(targetPath);
@@ -19,11 +24,11 @@ function assertOpenMASProjectManifest(manifest, packageJsonPath) {
   }
 
   if (!manifest.openmas || typeof manifest.openmas !== 'object') {
-    throw new Error(`Project Root package.json must include an \"openmas\" framework marker: ${packageJsonPath}`);
+    throw new Error(`Project Root package.json must include an \"openmas\" project marker: ${packageJsonPath}`);
   }
 
-  if (manifest.openmas.projectKind !== 'framework') {
-    throw new Error(`Project Root package.json must declare openmas.projectKind as \"framework\": ${packageJsonPath}`);
+  if (!SUPPORTED_OPENMAS_PROJECT_KINDS.has(manifest.openmas.projectKind)) {
+    throw new Error(`Project Root package.json must declare openmas.projectKind as \"framework\" or \"habitat\": ${packageJsonPath}`);
   }
 
   if (manifest.openmas.schemaVersion !== 1) {
@@ -49,3 +54,7 @@ export async function resolveProjectRoot(projectRootPath) {
     packageManifest: validatedManifest,
   };
 }
+
+export {
+  SUPPORTED_OPENMAS_PROJECT_KINDS,
+};

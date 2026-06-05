@@ -48,7 +48,11 @@ function appendConversationGuidance(nextStep, conversationRuntime) {
   return `${nextStep} ${conversationGuidance}`;
 }
 
-function buildBlockedNextStep({ request }) {
+function resolveCredentialVaultEnvironmentForNextStep(readiness) {
+  return normalizeOptionalString(readiness?.secretResolution?.credentialVaultEnvironment) ?? 'development';
+}
+
+function buildBlockedNextStep({ request, readiness }) {
   const locale = resolveActionRuntimeLocale({
     request,
   });
@@ -57,6 +61,9 @@ function buildBlockedNextStep({ request }) {
     return buildLocalizedInvocationNextStep({
       locale,
       scenario: 'blocked',
+      params: {
+        credentialVaultEnvironment: resolveCredentialVaultEnvironmentForNextStep(readiness),
+      },
     });
   }
 
@@ -478,6 +485,7 @@ export function buildInvocationNextStep({
   if (status === 'blocked') {
     return buildBlockedNextStep({
       request,
+      readiness,
     });
   }
 

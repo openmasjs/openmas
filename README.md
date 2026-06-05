@@ -7,85 +7,223 @@
 <h3 align="center">Build AI Teams, Not AI Chatbots.</h3>
 
 <p align="center">
-  The open-source framework for governed AI teams<br />
-  with roles, memory, permissions, schedules, and accountability.
-</p>
-
-<p align="center">
-  <em style="font-family: cursive;">Built for humans.</em>
+  OpenMAS is an open-source framework for AI-native habitats:
+  governed Operational Identities, Cognitive Identities, tools, memory,
+  credentials, scheduling, delegation, and durable runtime evidence.
 </p>
 
 <p align="center">
   <a href="https://openmas.dev/">Website</a>
+  ·
+  <a href="https://github.com/openmasjs/openmas/">GitHub</a>
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License" /></a>
-  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-blue.svg" alt="Node.js ≥ 20" /></a>
-  <a href="https://github.com/openmasjs/openmas"><img src="https://img.shields.io/badge/status-foundation-orange.svg" alt="Status: Foundation" /></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D22-blue.svg" alt="Node.js >= 22" /></a>
+  <a href="https://github.com/openmasjs/openmas"><img src="https://img.shields.io/badge/status-alpha-orange.svg" alt="Status: Alpha" /></a>
 </p>
 
 ---
 
-## Project Status
+## Alpha Status
 
-> **OpenMAS is in active foundation development.** The project already has a working local AI-native runtime foundation for governed Agent invocation, encrypted credentials, kernel-managed System Calls, scheduling, delegation, and audit evidence. OpenMAS is not production-ready yet, but the core architecture is being hardened toward the first beta.
+OpenMAS is in Alpha foundation development.
 
-### What's Ready
+The current Alpha focuses on the regular-user happy path:
 
-- Foundational architecture: Vision, Manifesto, Doctrine, Principles, Patterns, and Lexicon
-- Operational Identity-first Agent model with portable Cognitive Identities
-- Deterministic and probabilistic Agent invocation
-- Provider-agnostic adapter foundation for OpenRouter, Gemini, and Ollama
-- Prompt Factory Runtime v1
-- Memory and Context Factory v1
-- Governed durable memory integration
-- Credential Vault with AES-256-GCM encrypted, environment-specific credentials
-- Governed tools, workflows, permissions, approvals, and runtime evidence foundations
-- Local OpenMAS OS Service with bounded asynchronous execution
-- Singleton kernel lock, heartbeat, status, backpressure, and graceful shutdown
-- Kernel-managed System Call inbox, processor, Result Store, Result Records, and boundary checks
-- Beta-certified Execution Triangle: foreground request/response, immediate delegation, and scheduled execution
-- Durable one-shot Timers, successor-kernel recovery, and separate scheduled release and child-result truth
-- Contract-first offline deterministic suite and live runtime stress gates
+- create a new OpenMAS habitat;
+- run deterministic Alfred and Bruce invocations;
+- configure the Credential Vault;
+- run probabilistic provider-backed invocations through OpenRouter;
+- inspect the local OpenMAS OS service;
+- submit immediate delegation from Alfred to Bruce;
+- submit scheduled delegation from Alfred to Bruce;
+- preserve runtime evidence without exposing Secret Values.
 
-### What's In Progress
+This is not production orchestration yet. The terminal CLI is the Alpha bootstrap, administration, and diagnostic surface. Future user-facing interaction should move through governed channels such as WhatsApp, Telegram, Slack, and email as those adapters are implemented.
 
-- Regular-user Happy Onboarding Path design
-- Rails-like habitat creation, local command wrappers, and first-run experience
-- Public CLI contract, including `doctor`, credentials setup, invocation, and OS service commands
-- Starter habitat definition with Alfred and Bruce
-- Public baseline cleanup, documentation alignment, and Beta release polish
-- Human-friendly asynchronous result delivery for delegated and scheduled work
+## Requirements
 
-### What's Planned
+- Node.js `>=22`
+- npm or pnpm
+- An OpenRouter API key for probabilistic Alpha smoke tests
+- Docker Desktop or Docker Engine only if you want to run the Docker try-me path
 
-- Project scaffolding (`npm create openmas@latest <habitat>`) and existing-project initialization
-- Recurring and polling jobs
-- Conditional and event-driven execution
-- Interrupts, cancellation, pause, and priority override flows
-- Broader multi-agent conversations, pipelines, teams, and turn-based coordination
-- Observable runtime dashboard
-- Production deployment guidance for long-running OpenMAS OS Services
-- Additional provider, tool, workflow, and channel adapters
-- Ecosystem registry for shareable Cognitive Identities, tools, workflows, and adapters
-- Documentation for building complete AI-native habitats
+## Create A Habitat
 
----
+Using npm:
+
+```bash
+npm create openmas@alpha marketing-and-sales-department
+cd marketing-and-sales-department
+npm install
+```
+
+Using pnpm:
+
+```bash
+pnpm create openmas@alpha marketing-and-sales-department
+cd marketing-and-sales-department
+pnpm install
+```
+
+The generated folder is your OpenMAS AI-native habitat.
+
+## First Deterministic Try Me
+
+```bash
+npx openmas doctor
+npx openmas invoke alfred hello
+npx openmas invoke bruce hello
+```
+
+Equivalent human-friendly form:
+
+```bash
+npx openmas invoke alfred hello
+npx openmas invoke bruce hello
+```
+
+Deterministic invocation does not call an AI provider. It proves the habitat, Operational Identity, Cognitive Identity, routing, and deterministic command path are alive.
+
+## OpenRouter Credential Setup
+
+Open the development Credential Vault:
+
+```bash
+npx openmas credentials edit development
+```
+
+Add your OpenRouter key:
+
+```json
+{
+  "providers.openrouter.shared.default.api_key": "replace-with-your-openrouter-api-key"
+}
+```
+
+Never commit Secret Values or master keys.
+
+The Alpha Habitat uses `openrouter/free` by default. This keeps the first probabilistic smoke low-friction, but provider availability, quotas, model behavior, and rate limits still belong to OpenRouter.
+
+Verify readiness:
+
+```bash
+npx openmas credentials show development
+npx openmas doctor
+```
+
+## First Probabilistic Try Me
+
+```bash
+npx openmas ask alfred "Please inspect this habitat."
+npx openmas ask bruce "Please review this habitat and report one useful finding."
+```
+
+Probabilistic invocation calls the configured provider. OpenMAS should distinguish provider, Vault, credential, policy, runtime, and OS readiness failures clearly.
+
+## Local OS Service Try Me
+
+In one terminal:
+
+```bash
+npx openmas os watch --interval 1000
+```
+
+In another terminal:
+
+```bash
+npx openmas os status
+```
+
+On Windows, when you need the cleanest shutdown evidence, prefer the local Node wrapper:
+
+```bash
+node ./bin/openmas.js os watch --interval 1000
+```
+
+Use `Ctrl+C` to stop the service gracefully.
+
+## Delegation Try Me
+
+With the Credential Vault configured and `os watch` running:
+
+```bash
+npm run delegate:alfred-to-bruce
+```
+
+This asks Alfred to submit a governed `mas.os.delegate` request to the OpenMAS OS. Alfred should not claim Bruce completed work unless runtime evidence exists.
+
+## Scheduled Try Me
+
+With `os watch` running:
+
+```bash
+npm run schedule:bruce
+```
+
+To change the delay in a cross-platform way:
+
+```bash
+npm run schedule:bruce -- --delay-seconds 120
+pnpm run schedule:bruce -- --delay-seconds 120
+```
+
+Scheduled work is asynchronous. Use `npx openmas os status` after the scheduled time to inspect release and child-result evidence.
+
+## Docker Try Me
+
+Level 1: build the Alpha Habitat image.
+
+```bash
+docker build -t openmas-habitat .
+```
+
+Level 2: run Doctor inside the container.
+
+```bash
+docker run --rm openmas-habitat npx openmas doctor
+```
+
+Run the local OS service inside the container:
+
+```bash
+docker run --rm --init openmas-habitat
+```
+
+Docker is intentionally single-container for Alpha. Docker Compose, external queues, Redis, and production deployment automation are not part of this Alpha path.
+
+## AGENTS.md
+
+Every generated habitat includes an `AGENTS.md` file.
+
+That file is for AI coding partners. It explains the habitat boundary, safe commands, identity vocabulary, credential safety, OS state boundaries, and runtime evidence discipline.
+
+If an AI assistant helps you modify a habitat, ask it to read `AGENTS.md` first.
+
+## Cross-Platform Notes
+
+OpenMAS is designed for Linux, macOS, Windows, and Docker-based local smoke paths.
+
+Known Alpha limitations:
+
+- Windows `npx` may show the native batch termination prompt after `Ctrl+C`; use `node ./bin/openmas.js os watch ...` when clean shutdown evidence matters.
+- Docker tests require a running Docker daemon.
+- Linux, macOS, and pnpm lanes must be recorded before a final Alpha publication gate.
 
 ## Contributing
 
-OpenMAS is open source and welcomes contributions at every level:
+OpenMAS welcomes contributions to the framework, runtime, tools, adapters, starter habitats, documentation, and tests.
 
-- **Architecture** — Join the conversation about AI team design patterns
-- **Documentation** — Help improve guides and technical references
-- **Implementation** — Contribute to the runtime, adapters, and tooling
-- **Ecosystem** — Build and share agents, tools, workflows, and adapters
-- **Testing** — Help validate the framework against real-world scenarios
+Before changing runtime code, run:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+```bash
+npm run lint
+npm test
+```
 
----
+Live tests under `tests/live/` may require a configured Credential Vault, provider access, and a paired OS service.
 
 ## License
 
@@ -94,12 +232,7 @@ OpenMAS is released under the [MIT License](LICENSE).
 ---
 
 <p align="center">
-  <strong>OpenMAS — Build AI Teams, Not AI Chatbots.</strong>
-</p>
-
-<p align="center">
-  <a href="https://openmas.dev/">openmas.dev</a> ·
-  <a href="https://github.com/openmasjs/openmas/">GitHub</a>
+  <strong>OpenMAS - Build AI Teams, Not AI Chatbots.</strong>
 </p>
 
 <p align="center">

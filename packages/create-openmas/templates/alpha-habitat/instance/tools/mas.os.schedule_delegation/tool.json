@@ -1,0 +1,85 @@
+{
+  "kind": "tool_definition",
+  "version": 1,
+  "toolId": "mas.os.schedule_delegation",
+  "displayName": "OpenMAS OS Schedule Delegation",
+  "description": "Submits a scheduled delegation System Call for future OpenMAS OS execution.",
+  "lifecycleState": "active",
+  "owner": "openmas",
+  "toolType": "local_js_module",
+  "sideEffectLevel": "write_internal",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": true
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "requiredResourceTypes": [],
+  "requiredAccessModes": [],
+  "requiredPermissionModes": [
+    "tool.execute"
+  ],
+  "approvalPolicy": {
+    "required": false
+  },
+  "execution": {
+    "modulePath": "executor.js",
+    "timeoutMs": 10000,
+    "retryPolicy": {
+      "enabled": false
+    }
+  },
+  "artifactPolicy": {
+    "persistResult": false
+  },
+  "memoryPolicy": {
+    "allowWritebackCandidates": false
+  },
+  "intentMetadata": {
+    "kind": "action_intent_metadata",
+    "version": 1,
+    "primaryIntentId": "mas.os.schedule_delegation",
+    "targetActionType": "tool_execution",
+    "targetType": "tool",
+    "targetId": "mas.os.schedule_delegation",
+    "expectedSideEffectLevel": "write_internal",
+    "requestTypes": [
+      "tool_action",
+      "handoff"
+    ],
+    "semanticTags": [
+      "openmas",
+      "os",
+      "schedule",
+      "delegation",
+      "timer"
+    ],
+    "whenToUse": [
+      "The user asks to schedule a future delegation to Bruce or another Operational Identity."
+    ],
+    "whenNotToUse": [
+      "The user asks for immediate delegation."
+    ],
+    "exampleRequests": [
+      "Schedule Bruce to inspect this habitat one minute from now.",
+      "Alfred, schedule Bruce through the OpenMAS OS using mas.os.schedule_delegation with an explicit future runAt."
+    ],
+    "classificationGuidance": {
+      "highConfidenceSignals": [
+        "The request includes schedule, later, at a time, or one minute from now and asks another Operational Identity to work."
+      ],
+      "ambiguitySignals": [
+        "The request mentions time but not a target Operational Identity."
+      ],
+      "negativeSignals": [
+        "The request asks to run immediately."
+      ],
+      "requiredContextKeys": [
+        "target-operational-identity-id",
+        "task",
+        "scheduled-for"
+      ]
+    }
+  }
+}

@@ -122,7 +122,9 @@ export async function runSystemBoot(options = {}) {
     });
     masRootPath = masRootResolution.masRootPath;
 
-    projectValidation = await validateProjectStructure(projectRootPath);
+    projectValidation = await validateProjectStructure(projectRootPath, {
+      projectKind: projectRootResolution.packageManifest.openmas.projectKind,
+    });
     masValidation = await validateMasStructure(masRootPath);
     warnings = buildWarnings({ projectValidation, strict });
     errors = buildErrors({ projectValidation, masValidation });

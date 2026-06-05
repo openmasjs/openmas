@@ -1,0 +1,17 @@
+.git
+.npmrc
+node_modules
+coverage
+config/credentials/*.key
+config/credentials/*.json
+config/credentials/*.json.enc
+config/credentials/*.tmp
+instance/os
+instance/memory/state
+instance/memory/state-old
+instance/memory/artifacts
+instance/memory/artifacts-old
+tmp
+*.log
+.env
+.env.*

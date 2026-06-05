@@ -1,0 +1,31 @@
+{
+  "name": "__HABITAT_PACKAGE_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenMAS AI-native habitat",
+  "scripts": {
+    "openmas": "node ./bin/openmas.js",
+    "doctor": "node ./bin/openmas.js doctor",
+    "hello:alfred": "node ./bin/openmas.js invoke alfred hello",
+    "hello:bruce": "node ./bin/openmas.js invoke bruce hello",
+    "ask:alfred": "node ./bin/openmas.js ask alfred \"Please inspect this habitat.\"",
+    "ask:bruce": "node ./bin/openmas.js ask bruce \"Please review this habitat and report one useful finding.\"",
+    "delegate:alfred-to-bruce": "node ./bin/try-delegation.js",
+    "schedule:bruce": "node ./bin/try-scheduled-delegation.js",
+    "os:status": "node ./bin/openmas.js os status",
+    "os:tick": "node ./bin/openmas.js os tick --max-dispatched-jobs 1",
+    "os:watch": "node ./bin/openmas.js os watch --interval 500",
+    "docker:build": "docker build -t __HABITAT_PACKAGE_NAME__ .",
+    "docker:doctor": "docker run --rm __HABITAT_PACKAGE_NAME__ npx openmas doctor",
+    "credentials:edit": "node ./bin/openmas.js credentials edit development",
+    "credentials:show": "node ./bin/openmas.js credentials show development"
+  },
+  "dependencies": {
+    "openmas": "__OPENMAS_VERSION__"
+  },
+  "openmas": {
+    "projectKind": "habitat",
+    "schemaVersion": 1
+  }
+}

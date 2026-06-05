@@ -1,4 +1,7 @@
 import './boot/system-boot.test.js';
+import './onboarding/public-package-shape.test.js';
+import './onboarding/create-openmas-template.test.js';
+import './onboarding/openmas-doctor.test.js';
 import './invocation/agent-invocation-groundwork.test.js';
 import './operational-identities/cognitive-identity-source-api.test.js';
 import './invocation/agent-work-cycle-contract.test.js';

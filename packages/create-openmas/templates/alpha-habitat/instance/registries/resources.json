@@ -1,0 +1,26 @@
+{
+  "kind": "resource_registry",
+  "version": 1,
+  "resources": [
+    {
+      "kind": "resource_definition",
+      "version": 1,
+      "resourceId": "openrouter-api",
+      "resourceType": "brain-provider",
+      "displayName": "OpenRouter API",
+      "ownershipScope": "shared",
+      "lifecycleState": "active",
+      "description": "OpenRouter brain provider with multi-model access for the Alpha starter habitat."
+    },
+    {
+      "kind": "resource_definition",
+      "version": 1,
+      "resourceId": "mas-filesystem",
+      "resourceType": "storage",
+      "displayName": "OpenMAS Filesystem",
+      "ownershipScope": "shared",
+      "lifecycleState": "active",
+      "description": "Shared filesystem storage for OpenMAS persistence and artifacts."
+    }
+  ]
+}

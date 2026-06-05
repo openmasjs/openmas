@@ -201,7 +201,7 @@ Do not rewrite from scratch when the existing architecture already provides the 
 OpenMAS currently uses:
 
 - JavaScript ESM
-- Node.js `>=20`
+- Node.js `>=22`
 - npm
 - `package-lock.json`
 - Node's built-in `node:test` runner

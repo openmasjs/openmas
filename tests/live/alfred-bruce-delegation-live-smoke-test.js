@@ -117,16 +117,46 @@ async function main() {
       requiredSecretReferenceIds,
     });
 
+    const requestedChildTask = 'Bruce, in one short sentence, confirm that you received the OpenMAS live delegation smoke request.';
+    const requestedEnvelopeShape = JSON.stringify({
+      kind: 'brain_tool_request',
+      version: 1,
+      toolRequestId: 'tool-request-live-delegation-smoke',
+      toolId: 'mas.os.delegate',
+      input: {
+        targetOperationalIdentityId: 'bruce',
+        task: requestedChildTask,
+        command: 'ask',
+        mode: 'probabilistic',
+        parentContext: {
+          jobId: 'COPY_FROM_OPENMAS_OS_RUNTIME_CONTEXT',
+          processId: 'COPY_FROM_OPENMAS_OS_RUNTIME_CONTEXT',
+          threadId: 'COPY_FROM_OPENMAS_OS_RUNTIME_CONTEXT',
+        },
+      },
+      purpose: 'OpenMAS live delegation smoke',
+      expectedSideEffectLevel: 'write_internal',
+    }, null, 2);
+
     const result = await runLiveProbabilisticAgentTurn({
       operationalIdentityId: 'alfred',
       requestedBy: 'live-smoke-alfred-bruce-delegation',
       inputText: [
-        'Alfred, do not answer this audit yourself.',
-        'Delegate now to Bruce through the OpenMAS OS using mas.os.delegate.',
-        'Use targetOperationalIdentityId "bruce", command "ask", mode "probabilistic", and this child task:',
-        '"Bruce, in one short sentence, confirm that you received the OpenMAS live delegation smoke request."',
+        'Return exactly one JSON object and no prose.',
+        'The returned JSON must match this object shape:',
+        requestedEnvelopeShape,
+        'Replace input.parentContext with the exact parentContext object from the OpenMAS OS Runtime Context layer.',
+        'input must be a JSON object, not a string.',
+        'input.parentContext must be a JSON object, not a string.',
+        'Do not escape, quote, stringify, or nest the input object as text.',
+        'Emit kind "brain_tool_request", version 1, toolRequestId "tool-request-live-delegation-smoke", toolId "mas.os.delegate", purpose "OpenMAS live delegation smoke", and expectedSideEffectLevel "write_internal".',
+        'Copy the current OpenMAS OS parentContext object exactly as provided by your OpenMAS OS context layer into input.parentContext.',
+        'Set input.targetOperationalIdentityId to "bruce".',
+        `Set input.task exactly to ${JSON.stringify(requestedChildTask)}.`,
+        'Set input.command to "ask".',
+        'Set input.mode to "probabilistic".',
         'Do not use mas.os.schedule_delegation for this request.',
-      ].join(' '),
+      ].join('\n'),
     });
 
     printAgentSmokeSummary(label, result);

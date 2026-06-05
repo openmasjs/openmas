@@ -1,6 +1,13 @@
 # Keep the first public baseline intentionally minimal.
 *
 !/.gitignore
-!/README.md
-!/LICENSE
+!/AGENTS.md
+!/CHANGELOG.md
 !/CONTRIBUTING.md
+!/LICENSE
+!/README.md
+
+!/bin/**
+!/packages/**
+!/src/**
+!/tests/**

@@ -256,6 +256,7 @@ export async function runAgentInvocation(options = {}) {
       const nextStep = buildInvocationNextStep({
         status: executionStatus,
         request: normalizedRequest,
+        readiness,
       });
       const workCycle = buildAgentWorkCycleSummary({
         invocationId,
@@ -449,6 +450,7 @@ export async function runAgentInvocation(options = {}) {
         const nextStep = buildInvocationNextStep({
           status: 'blocked',
           request: requestForExecution,
+          readiness: executionReadiness,
         });
         const workCycle = buildAgentWorkCycleSummary({
           invocationId,

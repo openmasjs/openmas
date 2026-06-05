@@ -1,0 +1,16 @@
+{
+  "kind": "operational_identities_registry",
+  "version": 1,
+  "operationalIdentities": [
+    {
+      "operationalIdentityId": "alfred",
+      "rootPath": "alfred",
+      "category": "platform"
+    },
+    {
+      "operationalIdentityId": "bruce",
+      "rootPath": "bruce",
+      "category": "platform"
+    }
+  ]
+}

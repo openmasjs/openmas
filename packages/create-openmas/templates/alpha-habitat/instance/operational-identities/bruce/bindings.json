@@ -1,0 +1,18 @@
+{
+  "kind": "operational_identity_bindings",
+  "version": 1,
+  "operationalIdentityId": "bruce",
+  "bindings": [
+    {
+      "resourceId": "openrouter-api",
+      "accessMode": "execute",
+      "bindingState": "active",
+      "credentialReferenceId": "providers.openrouter.shared.default.api_key"
+    },
+    {
+      "resourceId": "mas-filesystem",
+      "accessMode": "read",
+      "bindingState": "active"
+    }
+  ]
+}

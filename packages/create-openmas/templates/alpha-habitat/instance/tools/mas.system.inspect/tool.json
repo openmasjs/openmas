@@ -1,0 +1,88 @@
+{
+  "kind": "tool_definition",
+  "version": 1,
+  "toolId": "mas.system.inspect",
+  "displayName": "OpenMAS System Inspect",
+  "description": "Reads safe starter habitat inventory metadata without mutating the instance.",
+  "lifecycleState": "active",
+  "owner": "openmas",
+  "toolType": "local_js_module",
+  "sideEffectLevel": "read_only",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": true
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "requiredResourceTypes": [
+    "storage"
+  ],
+  "requiredAccessModes": [
+    "read"
+  ],
+  "requiredPermissionModes": [
+    "tool.execute"
+  ],
+  "approvalPolicy": {
+    "required": false
+  },
+  "execution": {
+    "modulePath": "executor.js",
+    "timeoutMs": 10000,
+    "retryPolicy": {
+      "enabled": false
+    }
+  },
+  "artifactPolicy": {
+    "persistResult": false
+  },
+  "memoryPolicy": {
+    "allowWritebackCandidates": false
+  },
+  "intentMetadata": {
+    "kind": "action_intent_metadata",
+    "version": 1,
+    "primaryIntentId": "admin.mas.inspect",
+    "targetActionType": "tool_execution",
+    "targetType": "tool",
+    "targetId": "mas.system.inspect",
+    "expectedSideEffectLevel": "read_only",
+    "requestTypes": [
+      "diagnostic",
+      "tool_action"
+    ],
+    "semanticTags": [
+      "openmas",
+      "system",
+      "inspect",
+      "inventory",
+      "diagnostic",
+      "read-only"
+    ],
+    "whenToUse": [
+      "The user asks for a safe starter habitat inspection.",
+      "The user asks what Operational Identities, Cognitive Identities, resources, or tools exist."
+    ],
+    "whenNotToUse": [
+      "The user asks to mutate configuration.",
+      "The user asks to delegate work to another Operational Identity."
+    ],
+    "exampleRequests": [
+      "Please inspect this OpenMAS habitat.",
+      "What is configured in this habitat?"
+    ],
+    "classificationGuidance": {
+      "highConfidenceSignals": [
+        "The request asks for inspect, status, inventory, or current OpenMAS habitat shape."
+      ],
+      "ambiguitySignals": [
+        "The request asks for a broad review without specifying whether another Operational Identity should do it."
+      ],
+      "negativeSignals": [
+        "The request asks to publish, edit, delete, or delegate."
+      ],
+      "requiredContextKeys": []
+    }
+  }
+}

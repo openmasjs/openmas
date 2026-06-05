@@ -60,7 +60,41 @@ function resolveEditor() {
 }
 
 function parseEditorCommand(editorString) {
-  const parts = editorString.split(/\s+/);
+  const parts = [];
+  let currentPart = '';
+  let activeQuote = null;
+
+  for (let index = 0; index < editorString.length; index += 1) {
+    const character = editorString[index];
+
+    if ((character === '"' || character === "'")) {
+      if (activeQuote === character) {
+        activeQuote = null;
+        continue;
+      }
+
+      if (activeQuote === null) {
+        activeQuote = character;
+        continue;
+      }
+    }
+
+    if (/\s/u.test(character) && activeQuote === null) {
+      if (currentPart.length > 0) {
+        parts.push(currentPart);
+        currentPart = '';
+      }
+
+      continue;
+    }
+
+    currentPart += character;
+  }
+
+  if (currentPart.length > 0) {
+    parts.push(currentPart);
+  }
+
   return { command: parts[0], args: parts.slice(1) };
 }
 
@@ -97,10 +131,18 @@ function printNoEditorError() {
   console.error('');
   console.error('Set the EDITOR or VISUAL environment variable to your preferred editor.');
   console.error('');
-  console.error('Examples:');
+  console.error('Linux/macOS examples:');
   console.error('  export EDITOR="nano"');
   console.error('  export EDITOR="vim"');
-  console.error('  export EDITOR="code --wait"');
+  console.error('  export VISUAL="code --wait"');
+  console.error('');
+  console.error('Windows Command Prompt examples:');
+  console.error('  set "EDITOR=notepad.exe"');
+  console.error('  set "VISUAL=code --wait"');
+  console.error('');
+  console.error('Windows PowerShell examples:');
+  console.error('  $env:EDITOR="notepad.exe"');
+  console.error('  $env:VISUAL="code --wait"');
   console.error('');
 }
 
@@ -136,10 +178,10 @@ function printSuccess(vaultFilePath) {
 
 function printUsage() {
   console.log('Usage:');
-  console.log('  node bin/credentials.js edit [environment]');
-  console.log('  node bin/credentials.js edit [--environment <name>]');
-  console.log('  node bin/credentials.js show [environment]');
-  console.log('  node bin/credentials.js show [--environment <name>]');
+  console.log('  openmas credentials edit [environment]');
+  console.log('  openmas credentials edit [--environment <name>]');
+  console.log('  openmas credentials show [environment]');
+  console.log('  openmas credentials show [--environment <name>]');
   console.log('');
   console.log('Commands:');
   console.log('  edit    Open the credential vault in your editor');
@@ -150,9 +192,8 @@ function printUsage() {
   console.log('                         (e.g., development, staging, production)');
   console.log('');
   console.log('Examples:');
-  console.log('  npm run credentials:edit --environment development');
-  console.log('  npm run credentials:edit');
-  console.log('  node bin/credentials.js edit development');
+  console.log('  openmas credentials edit development');
+  console.log('  openmas credentials show development');
   console.log('');
   console.log('Default:');
   console.log('  When no environment is provided and OPENMAS_ENV is not set, OpenMAS uses development.');
@@ -285,7 +326,6 @@ async function runEdit({ projectRootPath, environment }) {
   const { command, args } = parseEditorCommand(editorString);
   const editorResult = spawnSync(command, [...args, tempFilePath], {
     stdio: 'inherit',
-    shell: process.platform === 'win32',
   });
 
   if (editorResult.status !== 0) {
@@ -356,10 +396,14 @@ async function runShow({ projectRootPath, environment }) {
   if (masterKeyResult.source === 'not_found') {
     console.error('Error: No master key found.');
     console.error('');
+    console.error('For a new local habitat, create the development vault with:');
+    console.error(`  openmas credentials edit ${normalizedEnvironment}`);
+    console.error('');
     console.error('To resolve this, do one of the following:');
-    console.error(`  1. Create a key file at config/credentials/${normalizedEnvironment}.key`);
-    console.error('  2. Set the environment variable: OPENMAS_MASTER_KEY');
-    console.error('  3. Ask your team lead for the master key.');
+    console.error(`  1. Run 'openmas credentials edit ${normalizedEnvironment}' to create the local vault and key.`);
+    console.error(`  2. Create a key file at config/credentials/${normalizedEnvironment}.key`);
+    console.error('  3. Set the environment variable: OPENMAS_MASTER_KEY');
+    console.error('  4. Ask your team lead for the master key.');
     console.error('');
     process.exit(1);
   }
@@ -383,7 +427,7 @@ async function runShow({ projectRootPath, environment }) {
     const vaultRelativePath = path.relative(projectRootPath, vaultResult.vaultFilePath);
     console.error(`Error: No credential vault found at ${vaultRelativePath}`);
     console.error('');
-    console.error("Run 'npm run credentials:edit' to create one.");
+    console.error(`Run 'openmas credentials edit ${normalizedEnvironment}' to create one.`);
     console.error('');
     process.exit(1);
   }
@@ -446,5 +490,7 @@ if (isMainModule()) {
 
 export {
   buildRedactedCredentialVaultSummary,
+  parseEditorCommand,
   parseCommandLineArguments,
+  resolveEditor,
 };

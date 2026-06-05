@@ -1,14 +1,36 @@
 {
   "name": "openmas",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.0-alpha.1",
+  "private": false,
   "description": "Open Source Multi-Agent System (MAS) Framework",
+  "homepage": "https://openmas.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openmasjs/openmas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openmasjs/openmas/issues"
+  },
   "type": "module",
   "main": "./src/boot/run-system-boot.js",
+  "bin": {
+    "openmas": "./bin/openmas.js"
+  },
+  "files": [
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "bin/",
+    "src/"
+  ],
+  "publishConfig": {
+    "tag": "alpha"
+  },
   "scripts": {
     "boot": "node ./bin/boot.js",
     "invoke:agent": "node ./bin/invoke-agent.js",
-    "lint": "eslint bin src tests",
+    "lint": "eslint bin src tests packages",
     "lint:tests": "eslint tests",
     "test": "node ./tests/run-tests.js",
     "test:live:providers": "node ./tests/live/provider-vault-smoke-test.js",
@@ -36,7 +58,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "eslint": "^10.4.0"

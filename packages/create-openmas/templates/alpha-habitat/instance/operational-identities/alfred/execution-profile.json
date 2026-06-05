@@ -1,0 +1,16 @@
+{
+  "kind": "execution_profile_definition",
+  "version": 1,
+  "executionProfileId": "alfred-default",
+  "executionMode": "hybrid",
+  "primaryBrain": {
+    "brainId": "openrouter-primary",
+    "providerId": "openrouter-api",
+    "modelId": "openrouter/free"
+  },
+  "fallbackBrain": null,
+  "enabledCommands": [
+    "hello",
+    "ask"
+  ]
+}

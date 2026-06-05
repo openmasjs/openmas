@@ -1,0 +1,24 @@
+{
+  "kind": "operational_identity_permissions",
+  "version": 1,
+  "operationalIdentityId": "bruce",
+  "defaultEffect": "deny",
+  "rules": [
+    {
+      "ruleId": "allow-openrouter-execute",
+      "effect": "allow",
+      "resourceId": "openrouter-api",
+      "accessModes": [
+        "execute"
+      ]
+    },
+    {
+      "ruleId": "allow-filesystem-read",
+      "effect": "allow",
+      "resourceId": "mas-filesystem",
+      "accessModes": [
+        "read"
+      ]
+    }
+  ]
+}

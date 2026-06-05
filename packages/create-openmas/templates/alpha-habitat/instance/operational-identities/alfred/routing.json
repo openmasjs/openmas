@@ -1,0 +1,6 @@
+{
+  "kind": "operational_identity_routing_definition",
+  "version": 1,
+  "defaultPrimaryCognitiveIdentityId": "system-steward",
+  "commandRoutes": []
+}

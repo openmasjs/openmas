@@ -158,20 +158,47 @@ async function main() {
     const requestedRunAt = new Date(Date.now() + delaySeconds * 1000).toISOString();
     const toolRequestId = createLiveSmokeId('tool-request-live-scheduled');
     const childTask = 'Bruce, in one short sentence, confirm that you received the OpenMAS scheduled live smoke request.';
+    const requestedEnvelopeShape = JSON.stringify({
+      kind: 'brain_tool_request',
+      version: 1,
+      toolRequestId,
+      toolId: 'mas.os.schedule_delegation',
+      input: {
+        targetOperationalIdentityId: 'bruce',
+        task: childTask,
+        runAt: requestedRunAt,
+        missedRunPolicy: 'delay',
+        command: 'ask',
+        mode: 'probabilistic',
+        parentContext: {
+          jobId: 'COPY_FROM_OPENMAS_OS_RUNTIME_CONTEXT',
+          processId: 'COPY_FROM_OPENMAS_OS_RUNTIME_CONTEXT',
+          threadId: 'COPY_FROM_OPENMAS_OS_RUNTIME_CONTEXT',
+        },
+      },
+      purpose: 'OpenMAS scheduled live smoke',
+      expectedSideEffectLevel: 'write_internal',
+    }, null, 2);
     const result = await runLiveProbabilisticAgentTurn({
       operationalIdentityId: 'alfred',
       requestedBy: 'live-smoke-alfred-bruce-scheduled-delegation',
       inputText: [
         'Return exactly one JSON object and no prose.',
+        'The returned JSON must match this object shape:',
+        requestedEnvelopeShape,
+        'Replace input.parentContext with the exact parentContext object from the OpenMAS OS Runtime Context layer.',
+        'input must be a JSON object, not a string.',
+        'input.parentContext must be a JSON object, not a string.',
+        'Do not escape, quote, stringify, or nest the input object as text.',
         `Emit kind "brain_tool_request", version 1, toolRequestId "${toolRequestId}", toolId "mas.os.schedule_delegation", purpose "OpenMAS scheduled live smoke", and expectedSideEffectLevel "write_internal".`,
         'Copy the current OpenMAS OS parentContext object exactly as provided by your OpenMAS OS context layer into input.parentContext.',
         'Set input.targetOperationalIdentityId to "bruce".',
-        `Set input.task exactly to "${childTask}"`,
-        `Set input.runAt exactly to "${requestedRunAt}" with no suffix and no transformation.`,
+        `Set input.task exactly to ${JSON.stringify(childTask)}.`,
+        `Set input.runAt exactly to ${JSON.stringify(requestedRunAt)} with no suffix and no transformation.`,
         'Set input.missedRunPolicy to "delay".',
         'Set input.command to "ask".',
         'Set input.mode to "probabilistic".',
-      ].join(' '),
+      ].join('\n'),
     });
 
     printAgentSmokeSummary(label, result);

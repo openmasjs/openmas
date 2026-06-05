@@ -11,7 +11,11 @@ async function createDirectoryTree(rootPath, relativePaths) {
   }
 }
 
-async function createProjectFixture({ omitMasComponents = [], withOpenMASMarker = true } = {}) {
+async function createProjectFixture({
+  omitMasComponents = [],
+  projectKind = 'framework',
+  withOpenMASMarker = true,
+} = {}) {
   const temporaryRootPath = await mkdtemp(path.join(os.tmpdir(), 'openmas-phase-0-'));
   const packageManifest = {
     name: 'openmas-fixture',
@@ -21,7 +25,7 @@ async function createProjectFixture({ omitMasComponents = [], withOpenMASMarker 
 
   if (withOpenMASMarker) {
     packageManifest.openmas = {
-      projectKind: 'framework',
+      projectKind,
       schemaVersion: 1,
     };
   }
@@ -32,15 +36,22 @@ async function createProjectFixture({ omitMasComponents = [], withOpenMASMarker 
     'utf8',
   );
 
-  await createDirectoryTree(temporaryRootPath, [
-    'bin',
-    'src',
-    'docs',
-    'var',
-    'tests',
-    'config',
-    'instance',
-  ]);
+  if (projectKind === 'habitat') {
+    await createDirectoryTree(temporaryRootPath, [
+      'config',
+      'instance',
+    ]);
+  } else {
+    await createDirectoryTree(temporaryRootPath, [
+      'bin',
+      'src',
+      'docs',
+      'var',
+      'tests',
+      'config',
+      'instance',
+    ]);
+  }
 
   const masComponentPaths = [
     'instance/cognitive-identities',
@@ -106,6 +117,20 @@ test('runSystemBoot returns ready and persists boot artifacts on the happy path'
   assert.match(bootReport, /Status: ready/);
 });
 
+test('runSystemBoot accepts a habitat project root without framework source folders', async () => {
+  const projectRootPath = await createProjectFixture({
+    projectKind: 'habitat',
+  });
+
+  const bootResult = await runSystemBoot({ projectRootPath });
+
+  assert.equal(bootResult.status, 'degraded');
+  assert.equal(bootResult.projectValidation.projectKind, 'habitat');
+  assert.equal(bootResult.invocationReadiness.allowed, false);
+  assert.deepEqual(bootResult.projectValidation.missingRequiredComponents, []);
+  assert.ok(bootResult.warnings.some((warning) => warning.includes('Optional project component is missing: README.md')));
+});
+
 test('runSystemBoot returns blocked and still persists artifacts when a required MAS component is missing', async () => {
   const projectRootPath = await createProjectFixture({
     omitMasComponents: ['instance/registries'],
@@ -151,5 +176,5 @@ test('runSystemBoot returns failed when the Project Root package.json misses the
   assert.equal(bootResult.status, 'failed');
   assert.equal(bootResult.projectRootPath, null);
   assert.equal(bootResult.invocationReadiness.allowed, false);
-  assert.ok(bootResult.errors.some((errorMessage) => errorMessage.includes('must include an "openmas" framework marker')));
+  assert.ok(bootResult.errors.some((errorMessage) => errorMessage.includes('must include an "openmas" project marker')));
 });

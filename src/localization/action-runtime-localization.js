@@ -653,6 +653,7 @@ export function buildLocalizedInvocationNextStep({
     conversationGuidance,
     approvalIds = [],
     pendingToolApprovalId,
+    credentialVaultEnvironment = 'development',
   } = params;
   const workflowApprovalLabel = approvalIds.length > 0
     ? ` (${approvalIds.join(', ')})`
@@ -661,7 +662,7 @@ export function buildLocalizedInvocationNextStep({
   if (normalizedLocale === 'es') {
     switch (scenario) {
       case 'blocked':
-        return 'Resuelve el prerrequisito de proveedor, secreto, binding o readiness mostrado en el mensaje/advertencias, y luego vuelve a ejecutar la invocacion probabilistica.';
+        return `Resuelve el prerrequisito de proveedor, secreto, binding o readiness mostrado en el mensaje/advertencias, y luego vuelve a ejecutar la invocacion probabilistica. Si este es un habitat local nuevo, ejecuta: npx openmas credentials edit ${credentialVaultEnvironment}.`;
       case 'blocked_generic':
         return 'Resuelve el prerrequisito de invocacion mostrado en el mensaje/advertencias, y luego vuelve a ejecutar la invocacion.';
       case 'failed_tool':
@@ -730,7 +731,7 @@ export function buildLocalizedInvocationNextStep({
   if (normalizedLocale === 'pt') {
     switch (scenario) {
       case 'blocked':
-        return 'Resolva o prerequisito de provedor, segredo, binding ou readiness mostrado na mensagem/avisos e execute novamente a invocacao probabilistica.';
+        return `Resolva o prerequisito de provedor, segredo, binding ou readiness mostrado na mensagem/avisos e execute novamente a invocacao probabilistica. Se este for um habitat local novo, execute: npx openmas credentials edit ${credentialVaultEnvironment}.`;
       case 'blocked_generic':
         return 'Resolva o prerequisito de invocacao mostrado na mensagem/avisos e execute novamente a invocacao.';
       case 'failed_tool':
@@ -798,7 +799,7 @@ export function buildLocalizedInvocationNextStep({
 
   switch (scenario) {
     case 'blocked':
-      return 'Resolve the provider, secret, binding, or readiness prerequisite shown in the message/warnings, then rerun the probabilistic invocation.';
+      return `Resolve the provider, secret, binding, or readiness prerequisite shown in the message/warnings, then rerun the probabilistic invocation. If this is a new local habitat, run: npx openmas credentials edit ${credentialVaultEnvironment}.`;
     case 'blocked_generic':
       return 'Resolve the invocation prerequisite shown in the message/warnings, then rerun the invocation.';
     case 'failed_tool':

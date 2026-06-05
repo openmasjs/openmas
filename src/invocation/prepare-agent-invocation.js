@@ -343,7 +343,7 @@ export async function prepareAgentInvocation({ bootResult, request }) {
       }
     }
 
-    if (secretResolutionResult) {
+    if (secretResolutionResult && brainSelection?.brainRequired === true) {
       warnings.push(...secretResolutionResult.warnings);
     }
 

@@ -1,0 +1,8 @@
+node_modules/
+config/credentials/*.key
+config/credentials/*.json
+instance/os/
+instance/memory/state/
+instance/memory/artifacts/
+tmp/
+*.log

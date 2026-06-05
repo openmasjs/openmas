@@ -1,0 +1,111 @@
+{
+  "kind": "tool_definition",
+  "version": 1,
+  "toolId": "mas.os.delegate",
+  "displayName": "OpenMAS OS Delegate",
+  "description": "Submits an immediate delegation System Call from the current Operational Identity to another Operational Identity.",
+  "lifecycleState": "active",
+  "owner": "openmas",
+  "toolType": "local_js_module",
+  "sideEffectLevel": "write_internal",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "targetOperationalIdentityId": {
+        "type": "string"
+      },
+      "task": {
+        "type": "string"
+      },
+      "command": {
+        "type": "string",
+        "default": "ask"
+      },
+      "mode": {
+        "type": "string",
+        "default": "probabilistic"
+      },
+      "parentContext": {
+        "type": "object"
+      }
+    },
+    "required": [
+      "targetOperationalIdentityId",
+      "task",
+      "parentContext"
+    ],
+    "additionalProperties": true
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "requiredResourceTypes": [],
+  "requiredAccessModes": [],
+  "requiredPermissionModes": [
+    "tool.execute"
+  ],
+  "approvalPolicy": {
+    "required": false
+  },
+  "execution": {
+    "modulePath": "executor.js",
+    "timeoutMs": 10000,
+    "retryPolicy": {
+      "enabled": false
+    }
+  },
+  "artifactPolicy": {
+    "persistResult": false
+  },
+  "memoryPolicy": {
+    "allowWritebackCandidates": false
+  },
+  "intentMetadata": {
+    "kind": "action_intent_metadata",
+    "version": 1,
+    "primaryIntentId": "mas.os.delegate",
+    "targetActionType": "tool_execution",
+    "targetType": "tool",
+    "targetId": "mas.os.delegate",
+    "expectedSideEffectLevel": "write_internal",
+    "requestTypes": [
+      "handoff",
+      "conversation"
+    ],
+    "semanticTags": [
+      "openmas",
+      "os",
+      "delegate",
+      "bruce",
+      "coordination"
+    ],
+    "whenToUse": [
+      "The user asks Alfred to ask Bruce to perform a bounded task."
+    ],
+    "whenNotToUse": [
+      "The current Operational Identity can answer directly.",
+      "The user asks to schedule the delegation for later."
+    ],
+    "exampleRequests": [
+      "Ask Bruce to inspect this habitat and report one useful finding.",
+      "Alfred, do not answer this audit yourself. Delegate now to Bruce through the OpenMAS OS using mas.os.delegate."
+    ],
+    "classificationGuidance": {
+      "highConfidenceSignals": [
+        "The request names Bruce and asks Alfred to ask, delegate, or hand off work."
+      ],
+      "ambiguitySignals": [
+        "The request names Bruce without a task."
+      ],
+      "negativeSignals": [
+        "The request asks for a direct answer."
+      ],
+      "requiredContextKeys": [
+        "target-operational-identity-id",
+        "task",
+        "parent-context.process-id",
+        "parent-context.thread-id"
+      ]
+    }
+  }
+}
