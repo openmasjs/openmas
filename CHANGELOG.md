@@ -12,6 +12,19 @@ This changelog follows the spirit of [Keep a Changelog](https://keepachangelog.c
 - Complete Alpha release staging and npm publishing checks.
 - Expand cross-platform certification evidence for Windows, Linux, and macOS.
 
+## [0.1.0-alpha.2] - 2026-06-05
+
+### Changed
+
+- Renamed the runtime npm package from `openmas` to `@openmas/core` after npm rejected the unscoped `openmas` package name as too similar to an existing package.
+- Updated the generated Alpha habitat runtime dependency to `@openmas/core@0.1.0-alpha.2`.
+- Kept the public `openmas` CLI binary and `npm create openmas@alpha` initializer path intact.
+- Added public scoped-package publish metadata for the runtime package.
+
+### Fixed
+
+- Fixed the published `create-openmas@0.1.0-alpha.1` starter dependency issue by preparing `create-openmas@0.1.0-alpha.2` to generate habitats that install `@openmas/core`.
+
 ## [0.1.0-alpha.1] - 2026-06-04
 
 ### Added

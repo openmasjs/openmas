@@ -13,6 +13,7 @@ const CREATE_OPENMAS_CLI_PATH = path.join(CREATE_OPENMAS_PACKAGE_PATH, 'bin', 'c
 const OPENMAS_HOMEPAGE = 'https://openmas.dev/';
 const OPENMAS_REPOSITORY_URL = 'git+https://github.com/openmasjs/openmas.git';
 const OPENMAS_BUGS_URL = 'https://github.com/openmasjs/openmas/issues';
+const OPENMAS_ALPHA_VERSION = '0.1.0-alpha.2';
 
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
@@ -37,6 +38,7 @@ function assertCommonPublicPackageMetadata(packageManifest) {
     url: OPENMAS_BUGS_URL,
   });
   assert.deepEqual(packageManifest.publishConfig, {
+    ...(packageManifest.name === '@openmas/core' ? { access: 'public' } : {}),
     tag: 'alpha',
   });
   assert.equal(packageManifest.license, 'MIT');
@@ -49,11 +51,12 @@ function assertCommonPublicPackageMetadata(packageManifest) {
 test('root package exposes the public openmas CLI shape', async () => {
   const packageManifest = await readJson(path.join(REPOSITORY_ROOT, 'package.json'));
 
-  assert.equal(packageManifest.name, 'openmas');
+  assert.equal(packageManifest.name, '@openmas/core');
+  assert.equal(packageManifest.version, OPENMAS_ALPHA_VERSION);
   assert.equal(packageManifest.private, false);
   assert.equal(packageManifest.description, 'Open Source Multi-Agent System (MAS) Framework');
   assert.equal(packageManifest.type, 'module');
-  assert.equal(packageManifest.bin.openmas, './bin/openmas.js');
+  assert.equal(packageManifest.bin.openmas, 'bin/openmas.js');
   assertCommonPublicPackageMetadata(packageManifest);
   assert.ok(packageManifest.files.includes('AGENTS.md'));
   assert.ok(packageManifest.files.includes('CHANGELOG.md'));
@@ -72,10 +75,11 @@ test('create-openmas package exposes the npm create binary shape', async () => {
   const packageManifest = await readJson(path.join(CREATE_OPENMAS_PACKAGE_PATH, 'package.json'));
 
   assert.equal(packageManifest.name, 'create-openmas');
+  assert.equal(packageManifest.version, OPENMAS_ALPHA_VERSION);
   assert.equal(packageManifest.private, false);
   assert.equal(packageManifest.description, 'Create an OpenMAS AI-native habitat');
   assert.equal(packageManifest.type, 'module');
-  assert.equal(packageManifest.bin['create-openmas'], './bin/create-openmas.js');
+  assert.equal(packageManifest.bin['create-openmas'], 'bin/create-openmas.js');
   assertCommonPublicPackageMetadata(packageManifest);
   assert.ok(packageManifest.files.includes('README.md'));
   assert.ok(packageManifest.files.includes('LICENSE'));
@@ -112,6 +116,7 @@ test('public README tells the Alpha regular-user happy path honestly', async () 
 
   assert.match(readme, /npm create openmas@alpha marketing-and-sales-department/u);
   assert.match(readme, /pnpm create openmas@alpha marketing-and-sales-department/u);
+  assert.match(readme, /@openmas\/core/u);
   assert.match(readme, /npx openmas invoke alfred hello/u);
   assert.match(readme, /npx openmas invoke bruce hello/u);
   assert.match(readme, /providers\.openrouter\.shared\.default\.api_key/u);
@@ -134,6 +139,7 @@ test('create-openmas README renders a standalone npm package landing page', asyn
   assert.match(readme, /Create a new OpenMAS AI-native habitat/u);
   assert.match(readme, /npm create openmas@alpha marketing-and-sales-department/u);
   assert.match(readme, /pnpm create openmas@alpha marketing-and-sales-department/u);
+  assert.match(readme, /@openmas\/core/u);
   assert.match(readme, /npx openmas doctor/u);
   assert.match(readme, /npx openmas invoke alfred hello/u);
   assert.match(readme, /npx openmas invoke bruce hello/u);

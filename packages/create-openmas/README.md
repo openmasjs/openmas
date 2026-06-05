@@ -53,6 +53,7 @@ Never commit Credential Vault master keys, encrypted credentials, decrypted Secr
 - Bruce, the starter Evaluation Audit Steward Operational Identity.
 - Portable Cognitive Identities for both stewards.
 - A Credential Reference registry for the OpenRouter Alpha provider path.
+- The `@openmas/core` runtime dependency, which exposes the `openmas` CLI binary after `npm install`.
 - `mas.system.inspect`, `mas.os.delegate`, and `mas.os.schedule_delegation` starter tools.
 - Local OS service commands for status, ticks, and watch mode.
 - Docker Level 1 and Level 2 starter files.

@@ -22,7 +22,7 @@
     "credentials:show": "node ./bin/openmas.js credentials show development"
   },
   "dependencies": {
-    "openmas": "__OPENMAS_VERSION__"
+    "@openmas/core": "__OPENMAS_VERSION__"
   },
   "openmas": {
     "projectKind": "habitat",

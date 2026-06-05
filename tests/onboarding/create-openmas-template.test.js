@@ -116,7 +116,8 @@ test('create-openmas generates an alpha habitat with portable project metadata',
   assert.equal(packageManifest.type, 'module');
   assert.equal(packageManifest.openmas.projectKind, 'habitat');
   assert.equal(packageManifest.openmas.schemaVersion, 1);
-  assert.ok(packageManifest.dependencies.openmas);
+  assert.equal(packageManifest.dependencies['@openmas/core'], '0.1.0-alpha.2');
+  assert.ok(!Object.hasOwn(packageManifest.dependencies, 'openmas'));
   assert.equal(packageManifest.scripts['hello:alfred'], 'node ./bin/openmas.js invoke alfred hello');
   assert.equal(packageManifest.scripts['hello:bruce'], 'node ./bin/openmas.js invoke bruce hello');
   assert.equal(

@@ -68,7 +68,7 @@ cd marketing-and-sales-department
 pnpm install
 ```
 
-The generated folder is your OpenMAS AI-native habitat.
+The generated folder is your OpenMAS AI-native habitat. Its `package.json` installs the `@openmas/core` runtime package, which exposes the `openmas` CLI binary.
 
 ## First Deterministic Try Me
 
